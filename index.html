@@ -21,6 +21,12 @@
     var saved = localStorage.getItem("theme");
     var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    /* 开信仪式：仅首次访问且未要求减弱动效时 */
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!localStorage.getItem("letter-opened") && !reduce) {
+      document.documentElement.classList.add("first-visit");
+      localStorage.setItem("letter-opened", "1");
+    }
   } catch (e) {}
 })();
 </script>
@@ -370,6 +376,57 @@ a.post-row { display: grid; }
 .gh-list li a:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
 .gh-list li time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; }
 
+/* ============ 开信仪式与信件氛围 ============ */
+.hero::before, .hero::after {
+  content: ""; position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+}
+.hero::before {
+  width: 560px; height: 560px; right: -160px; top: -140px;
+  background: radial-gradient(circle, rgba(47, 95, 224, .09), transparent 62%);
+  animation: inkDrift 46s ease-in-out infinite alternate;
+}
+.hero::after {
+  width: 440px; height: 440px; left: -140px; bottom: -60px;
+  background: radial-gradient(circle, rgba(47, 95, 224, .06), transparent 62%);
+  animation: inkDrift 58s ease-in-out infinite alternate-reverse;
+}
+@keyframes inkDrift { to { transform: translate(-46px, 34px); } }
+.hero .wrap, .hero .marquee { position: relative; z-index: 1; }
+
+/* 印章（信头小印 + 页脚落款大印） */
+.seal { display: inline-grid; place-items: center; flex: none; transform: rotate(-4deg); vertical-align: middle; }
+.seal svg { display: block; filter: drop-shadow(0 2px 6px rgba(23, 22, 15, .16)); }
+[data-theme="dark"] .seal svg .seal-bg { fill: #7b93f2; }
+[data-theme="dark"] .seal svg text { fill: #14130f; }
+
+/* 首次访问的开信编排（回访自动跳过） */
+.first-visit .hero-eyebrow, .first-visit .hero-sub, .first-visit .hero-cta, .first-visit .hero-meta, .first-visit .marquee { opacity: 0; animation: heroInText 760ms var(--ease) forwards; }
+.first-visit .hero-eyebrow { animation-delay: .25s }
+.first-visit .hero-sub { animation-delay: .85s }
+.first-visit .hero-cta { animation-delay: 1.1s }
+.first-visit .hero-meta { animation-delay: 1.35s }
+.first-visit .marquee { animation: heroInFade 900ms var(--ease) 1.7s forwards }
+.first-visit .reveal-mask { animation-delay: .55s }
+.first-visit .hero-eyebrow::after {
+  content: ""; display: block; height: 1px; background: var(--hairline);
+  transform: scaleX(0); transform-origin: left; animation: lineGrow 900ms var(--ease) .55s forwards;
+}
+.first-visit .artifact { opacity: 0; animation: heroInFade 800ms var(--ease) forwards; }
+.first-visit .artifact.term { animation-delay: 1.2s }
+.first-visit .artifact.dash { animation-delay: 1.35s }
+.first-visit .artifact.chat { animation-delay: 1.5s }
+.first-visit .artifact.focus { animation-delay: 1.65s }
+@keyframes heroInText { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes heroInFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lineGrow { to { transform: scaleX(1); } }
+
+/* ============ 栏目引言 ============ */
+.sec-intro {
+  font-size: clamp(16px, 1.9vw, 21px); color: var(--ink-2);
+  max-width: 32em; margin: calc(-1 * clamp(16px, 2.2vw, 34px)) 0 clamp(26px, 3.5vw, 46px);
+}
+.sec-intro .accent-dot { color: var(--accent); }
+
 /* ============ 响应式 ============ */
 @media (max-width: 1024px) {
   .hero-grid { grid-template-columns: 1fr; }
@@ -397,6 +454,7 @@ a.post-row { display: grid; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .rv { opacity: 1; transform: none; }
   .reveal-mask { clip-path: none; }
+  .first-visit .hero-eyebrow, .first-visit .hero-sub, .first-visit .hero-cta, .first-visit .hero-meta, .first-visit .marquee, .first-visit .artifact { opacity: 1; }
 }
 </style>
 </head>
@@ -428,7 +486,7 @@ a.post-row { display: grid; }
 <header class="hero" id="top">
   <div class="wrap hero-grid">
     <div class="hero-left">
-      <div class="hero-eyebrow rv in">这是一封公开的信</div>
+      <div class="hero-eyebrow rv in">这是一封公开的信<span class="seal" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 64 64"><rect class="seal-bg" x="2" y="2" width="60" height="60" rx="10" fill="#2f5fe0"/><rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#f4f2ec" stroke-opacity=".55" stroke-width="1.5"/><text x="32" y="30" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">蓝</text><text x="32" y="51" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">纸</text></svg></span></div>
       <h1 class="hero-title"><span class="reveal-mask">把大模型装进<span class="hl">真实工作流</span>，<br>把思考写成文章。</span></h1>
       <p class="hero-sub rv in" style="transition-delay:.4s">
         白天做产品与数据，夜里把过程写成文字 ——
@@ -439,7 +497,7 @@ a.post-row { display: grid; }
         <a class="btn btn-primary" href="#works">从造物开始 ↓</a>
         <a class="btn btn-ghost" href="#contact">见字如面 →</a>
       </div>
-      <div class="hero-meta rv in" style="transition-delay:.7s">广州 · 纸面与代码之间</div>
+      <div class="hero-meta rv in" style="transition-delay:.7s">写于 2026 年秋 · 广州 · 纸面与代码之间</div>
     </div>
 
     <div class="hero-visual" id="artifacts">
@@ -478,6 +536,7 @@ a.post-row { display: grid; }
   <section id="works">
     <div class="wrap">
       <div class="sec-label rv"><span class="idx">01</span><b>造物</b><span>WORKS — 均已开源，可点开看代码</span></div>
+      <p class="sec-intro rv">说不如做<span class="accent-dot"> —— </span>以下每一样，都能点开亲手试。</p>
       <div>
         <a class="work-row rv" href="https://github.com/Batianxieshen1/OpenJob" target="_blank" rel="noopener" data-preview="openjob">
           <span class="w-idx">01</span>
@@ -533,6 +592,7 @@ a.post-row { display: grid; }
   <section id="strengths">
     <div class="wrap">
       <div class="sec-label rv"><span class="idx">02</span><b>底色</b><span>STRENGTHS — Numbers behind the works</span></div>
+      <p class="sec-intro rv">作品是结出的果实<span class="accent-dot">，</span>这些是往下扎的根。</p>
       <div class="stats rv">
         <div class="stat"><div class="num" data-count="7">0</div><div class="cap">个开源项目，全部独立完成</div></div>
         <div class="stat"><div class="num" data-count="12">0</div><div class="cap">人团队统筹 · 融媒体中心副主任</div></div>
@@ -566,6 +626,7 @@ a.post-row { display: grid; }
   <section id="writing">
     <div class="wrap">
       <div class="sec-label rv"><span class="idx">03</span><b>札记</b><span>NOTES — 2 篇已发布，持续更新</span></div>
+      <p class="sec-intro rv">把踩过的坑<span class="accent-dot">，</span>写成后来人的路标。</p>
       <div>
         <a class="post-row rv" href="posts/three-levels.html">
           <span class="p-date">2026 · 09</span>
@@ -596,6 +657,7 @@ a.post-row { display: grid; }
   <section id="about">
     <div class="wrap">
       <div class="sec-label rv"><span class="idx">04</span><b>来路</b><span>JOURNEY</span></div>
+      <p class="sec-intro rv">一行一行<span class="accent-dot">，</span>走成现在的样子。</p>
       <div class="about-grid">
         <div class="about-copy rv">
           <div class="now-pill"><i></i>NOW — 博客更新中 · 正在做新的东西</div>
@@ -640,7 +702,7 @@ a.post-row { display: grid; }
 <footer id="contact">
   <div class="wrap foot-inner">
     <div class="foot-label rv">05 — 信箱 · CORRESPONDENCE · 欢迎合作、问询与闲聊</div>
-    <div class="foot-big rv">见字如面<span class="accent">。</span></div>
+    <div class="foot-big rv">见字如面<span class="accent">。</span><span class="seal" aria-hidden="true" style="margin-left:18px"><svg width="62" height="62" viewBox="0 0 64 64"><rect class="seal-bg" x="2" y="2" width="60" height="60" rx="10" fill="#2f5fe0"/><rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#f4f2ec" stroke-opacity=".55" stroke-width="1.5"/><text x="32" y="30" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">蓝</text><text x="32" y="51" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">纸</text></svg></span></div>
     <div class="foot-links rv">
       <a class="foot-link" href="assets/resume.pdf" download="简历.pdf" style="background:var(--paper);color:var(--ink);border-color:var(--paper)">↓ 下载简历 PDF</a>
       <a class="foot-link" href="mailto:13676097998@163.com">✉ 邮箱 13676097998@163.com</a>
@@ -648,7 +710,7 @@ a.post-row { display: grid; }
       <a class="foot-link" href="javascript:void(0)" id="wechat-copy" title="点击复制微信号">◎ 微信 lqt1010dsb</a>
     </div>
     <div class="foot-base">
-      <span>© 2026 蓝纸 · BLUE PAPER</span>
+      <span>写于 2026 年秋 · 广州 —— © 2026 蓝纸 · BLUE PAPER</span>
       <span id="busuanzi_container_site_pv" style="display:none">本页被看过 <b id="busuanzi_value_site_pv"></b> 次 · </span>
       <span>本页由 AI 辅助构建 · <a href="#top">人工复核后发布</a> ↑</span>
     </div>
