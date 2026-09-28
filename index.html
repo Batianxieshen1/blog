@@ -777,6 +777,21 @@ a.post-row { display: grid; }
     }
   }
 
+  /* ---------- 跑马灯：按视口自动补足副本，保证无缝 ---------- */
+  var track = document.querySelector(".marquee-track");
+  if (track && track.children.length) {
+    var fillMarquee = function () {
+      var unit = track.children[0];
+      var w = unit.getBoundingClientRect().width;
+      if (!w) return;
+      /* 总宽度需 ≥ 2×视口，且副本数为偶数，translateX(-50%) 才严格无缝 */
+      var need = Math.max(2, Math.ceil((window.innerWidth * 2) / w / 2) * 2);
+      while (track.children.length < need) track.appendChild(track.children[0].cloneNode(true));
+    };
+    fillMarquee();
+    window.addEventListener("resize", fillMarquee, { passive: true });
+  }
+
   /* ---------- 微信号复制 ---------- */
   var wc = document.getElementById("wechat-copy");
   if (wc) {
