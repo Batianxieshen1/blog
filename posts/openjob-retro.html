@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenJob 复盘：把求职串成一条可审阅的流水线 — 林庆涛</title>
+<meta name="description" content="找工作的重复劳动可以交给机器，但投不投的判断不能外包。OpenJob 的设计哲学、五个环节与三条复盘。">
+<meta name="theme-color" content="#f4f2ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-size='34' font-family='PingFang SC, Microsoft YaHei, sans-serif' font-weight='700' fill='%23f4f2ec' text-anchor='middle'%3E林%3C/text%3E%3Ccircle cx='50' cy='14' r='4' fill='%232f5fe0'/%3E%3C/svg%3E">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+@view-transition { navigation: auto; }
+:root {
+  --paper: #f4f2ec; --paper-2: #ece9e0; --card: #fff;
+  --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8;
+  --nav-bg: rgba(244, 242, 236, .82);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms; --dur-med: 280ms;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
+}
+[data-theme="dark"] {
+  --paper: #14130f; --paper-2: #1c1b16; --card: #1b1a15;
+  --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80;
+  --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
+  --nav-bg: rgba(20, 19, 15, .8);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body); background: var(--paper); color: var(--ink);
+  line-height: 1.9; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--accent); color: #fff; }
+a { color: inherit; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 320ms var(--ease), box-shadow 320ms var(--ease); }
+nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--hairline); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.logo { font-weight: 700; font-size: 17px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.back { font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-decoration: none; color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
+.back:hover { color: var(--accent-ink); }
+
+header.post-head { padding: 140px 0 0; }
+.post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
+.post-meta .tag { color: var(--accent-ink); }
+h1.post-title { font-weight: 900; font-size: clamp(26px, 3.4vw, 42px); line-height: 1.4; margin: 18px 0 10px; }
+.post-sub { font-size: clamp(15px, 1.6vw, 17.5px); color: var(--ink-2); max-width: 40em; }
+.post-rule { border: 0; border-top: 1px solid var(--hairline); margin: clamp(30px, 4vw, 48px) 0 0; }
+
+article { max-width: 720px; margin: 0 auto; padding: clamp(36px, 5vw, 64px) 0 0; font-size: 16px; }
+article p { color: var(--ink-2); margin-bottom: 1.35em; }
+article p b { color: var(--ink); }
+article h2 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; margin: 2.2em 0 .8em; line-height: 1.5; }
+article h2 .no { font-family: var(--font-mono); font-size: .62em; color: var(--accent-ink); letter-spacing: .12em; vertical-align: 3px; margin-right: 10px; }
+article blockquote {
+  border-left: 3px solid var(--accent); background: var(--paper-2);
+  padding: 14px 20px; border-radius: 0 12px 12px 0; margin: 1.4em 0; color: var(--ink-2); font-size: 14.5px;
+}
+article ul, article ol { padding-left: 1.4em; color: var(--ink-2); margin-bottom: 1.35em; }
+article li { margin-bottom: .4em; }
+article strong { color: var(--ink); }
+.article-cred { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--hairline); margin-top: 3em; padding-top: 16px; }
+.article-cred a { color: var(--accent-ink); }
+
+footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var(--hairline); }
+.foot-inner { padding: clamp(32px, 4vw, 52px) 0 clamp(28px, 3vw, 40px); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+.next { font-size: 14.5px; font-weight: 500; text-decoration: none; color: var(--ink-2); border-bottom: 1px solid var(--hairline); padding-bottom: 3px; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.next:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+.foot-c { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="../index.html"><span class="dot"></span>林庆涛</a>
+    <a class="back" href="../index.html#writing">← 回主页 · 写作区</a>
+  </div>
+</nav>
+
+<header class="post-head">
+  <div class="wrap">
+    <div class="post-meta">
+      <span class="tag">博客 · 002</span>
+      <span>2026 · 09 · 28</span>
+      <span>约 11 分钟</span>
+      <span>AI Agent · 产品复盘</span>
+    </div>
+    <h1 class="post-title">OpenJob 复盘：<br>把求职串成一条可审阅的流水线</h1>
+    <p class="post-sub">反复刷搜索结果、把同一份简历改来改去、挨个点"立即沟通"——找工作的三件重复劳动，我把它们交给机器；但投不投的判断，我留给了自己。这篇文章拆解 OpenJob 的设计哲学、五个环节，以及做完之后我学到的三件事。</p>
+    <hr class="post-rule">
+  </div>
+</header>
+
+<div class="wrap">
+  <article>
+    <p>集中找工作那段时间，我发现一个尴尬的事实：<b>占用时间的全是重复劳动，而真正决定成败的全是判断。</b>翻页、去重、筛岗位是重复的；"这个岗位值不值得投"没法外包。把同一份简历改出五个版本是重复的；"这版该突出什么"没法外包。于是就有一个很自然的分工问题——哪些交给机器，哪些留给自己。</p>
+    <p>OpenJob 是我给出的答案：一个运行在自己电脑上的 AI 求职工作台，把"找岗位、去重、评分、改简历、准备招呼语、盯回复"串成一条流水线。<b>它不是代投服务，更不是无人值守的海投机器人。</b></p>
+
+    <h2><span class="no">01</span>设计哲学：三条分工铁律</h2>
+    <p>整个项目都建立在这三句分工上：</p>
+    <ul>
+      <li><strong>机器做重复的</strong>：翻页采集、去重入库、逐条打分、按 JD 改简历文字、定时盯回复；</li>
+      <li><strong>我做判断的</strong>：投不投、确认每一条发出的消息、决定简历最终版本；</li>
+      <li><strong>机器不许碰的</strong>：任何对外发送动作。所有打招呼、发简历、回复 HR 都先进确认队列，我放行才发——<b>代码层面不存在绕过路径</b>。</li>
+    </ul>
+    <p>第三条最容易被质疑"何必这么死板"。但用了之后我反而确定：<b>确认制不是效率的敌人，是信任的基础。</b>正因为知道机器绝不会替我发出任何一句话，我才敢让它在前面放开跑。</p>
+
+    <h2><span class="no">02</span>五个环节，各自的巧思</h2>
+    <h3>采集：只做入口，不做黑箱</h3>
+    <p>岗位来自 BOSS 直聘的搜索结果，关键词和城市完全由我配置，支持搜索流、推荐流和针对目标公司的定向猎捕三条路。所有岗位统一去重入库，实习岗和正式岗在采集阶段就能识别过滤。到点的定时任务只做"采集 + 评分"，错过时段就记录跳过，<b>绝不补跑</b>——宁可少采一轮，不做失控的事。</p>
+    <h3>评分：让 AI 说人话，也说真话</h3>
+    <p>五维评分里"职责匹配"占 40 分、"证据强度"占 25 分。我特意加了一条<b>"弱迁移封顶"</b>：没有直接证据的技能，不允许 AI 因为"看起来相关"就打高分。黑名单和一票否决词命中直接出局。整个评分阶段零页面访问——纯文本分析，不占平台的风控额度。</p>
+    <h3>简历：改写可以激进，编造绝对不行</h3>
+    <p>简历定制是整条流水线里工程量最大的环节。多方向底稿按岗位方向自动选稿；JD 定向改写采用<b>逐行等长换写</b>——换动词、融入岗位关键词、调语序，但照片、栏目、版式永不改动，保证一页排版零损伤。最有意思的是<b>编造拦截</b>：AI 想新增事实、数字、经历？检测到就生成失败。AI 腔还会被自动清洗掉——"赋能""抓手"这类词活不过终审。</p>
+    <h3>投递：确认队列是唯一的出口</h3>
+    <p>所有对外动作先进队列，逐条放行。招呼语基于 JD 和简历生成，我可以编辑后发送。三重防重复（岗位级 + 会话级 + 历史台账）保证我不会对同一家公司发出尴尬的第二句。每日上限、随机间隔、发送时间窗——机器负责节奏，我负责内容。</p>
+    <h3>监测：让等待也自动化</h3>
+    <p>HR 回复由定时监听发现，桌面通知提醒我去平台回复。跟进间隔可配置，默认关闭——我不想变成骚扰机器人的样子。</p>
+
+    <h2><span class="no">03</span>工程化：给自己上的枷锁</h2>
+    <p>一个自己用的工具，最容易死在"随便改改"上。OpenJob 的做法是把工程标准拉满：GitHub Actions 把 Python 测试、静态检查、前端构建和关键 UI 验收作为合并门禁；每日自动备份数据库和简历；数据完全自持在本地。这些约束在添加的时候都让我慢了一点，但每一次重构都没有还过债。</p>
+
+    <h2><span class="no">04</span>复盘：学到的三件事</h2>
+    <ul>
+      <li><strong>配置驱动的价值在"第二份数据"出现时才显现。</b>最初我把关键词写死在代码里，直到第二次换城市搜索才体会到：把数据源、字段映射、评分规则全部抽离成配置，才是可复用的前提。这个思想后来也被我用进了电商增长分析框架。</li>
+      <li><strong>人工确认不是效率的敌人。</b>加确认队列那天我以为自己会烦，结果它成了我最安心的功能——流水线越自动，出口越要收紧。</li>
+      <li><strong>AI 最大的风险不是出错，是"看起来对"。</b>弱迁移封顶和编造拦截这两个机制，都是被 AI 的自信教育出来的。它不是在撒谎，它只是在没有证据的时候也敢下结论。</li>
+    </ul>
+
+    <p>OpenJob 已在 GitHub 开源。如果你也在找工作，或者对"人机分工"这个话题有不同看法，欢迎在讨论区找我聊——这个项目本身就是我的一次回答。</p>
+
+    <p class="article-cred">本文基于 OpenJob 项目 README 与产品文档整理。项目地址：<a href="https://github.com/Batianxieshen1/OpenJob" target="_blank" rel="noopener">github.com/Batianxieshen1/OpenJob</a>。代码是诚实的，复述是我自己的。</p>
+  </article>
+</div>
+
+<footer class="post-foot">
+  <div class="wrap foot-inner">
+    <a class="next" href="three-levels.html">上一篇：大模型应用的三个层次 →</a>
+    <a class="next" href="https://github.com/Batianxieshen1/blog/discussions" target="_blank" rel="noopener">💬 去讨论区留言</a>
+    <span class="foot-c">© 2026 林庆涛 · 机器生成初稿 · 人工复核发布</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  window.addEventListener("scroll", function () {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
