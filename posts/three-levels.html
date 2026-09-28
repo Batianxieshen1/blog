@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型应用的三个层次：工具 → 工作流 → 决策 — 林庆涛</title>
+<meta name="description" content="从「问一句答一句」到「端到端干完一件事」再到「帮你发现机会」——大模型应用的三个层次，附我自己的实践与踩坑。">
+<meta name="theme-color" content="#f4f2ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-size='34' font-family='PingFang SC, Microsoft YaHei, sans-serif' font-weight='700' fill='%23f4f2ec' text-anchor='middle'%3E林%3C/text%3E%3Ccircle cx='50' cy='14' r='4' fill='%232f5fe0'/%3E%3C/svg%3E">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f4f2ec; --paper-2: #ece9e0; --card: #fff;
+  --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8;
+  --nav-bg: rgba(244, 242, 236, .82);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms; --dur-med: 280ms;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
+}
+[data-theme="dark"] {
+  --paper: #14130f; --paper-2: #1c1b16; --card: #1b1a15;
+  --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80;
+  --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
+  --nav-bg: rgba(20, 19, 15, .8);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body); background: var(--paper); color: var(--ink);
+  line-height: 1.9; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--accent); color: #fff; }
+a { color: inherit; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 320ms var(--ease), box-shadow 320ms var(--ease); }
+nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--hairline); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.logo { font-weight: 700; font-size: 17px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.back { font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-decoration: none; color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
+.back:hover { color: var(--accent-ink); }
+
+header.post-head { padding: 140px 0 0; }
+.post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
+.post-meta .tag { color: var(--accent-ink); }
+h1.post-title { font-weight: 900; font-size: clamp(26px, 3.4vw, 42px); line-height: 1.4; margin: 18px 0 10px; }
+.post-sub { font-size: clamp(15px, 1.6vw, 17.5px); color: var(--ink-2); max-width: 40em; }
+.post-rule { border: 0; border-top: 1px solid var(--hairline); margin: clamp(30px, 4vw, 48px) 0 0; }
+
+article { max-width: 720px; margin: 0 auto; padding: clamp(36px, 5vw, 64px) 0 0; font-size: 16px; }
+article p { color: var(--ink-2); margin-bottom: 1.35em; }
+article p b { color: var(--ink); }
+article h2 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; margin: 2.2em 0 .8em; line-height: 1.5; }
+article h2 .no { font-family: var(--font-mono); font-size: .62em; color: var(--accent-ink); letter-spacing: .12em; vertical-align: 3px; margin-right: 10px; }
+article h3 { font-size: 17px; font-weight: 700; margin: 1.6em 0 .6em; color: var(--ink); }
+article blockquote {
+  border-left: 3px solid var(--accent); background: var(--paper-2);
+  padding: 14px 20px; border-radius: 0 12px 12px 0; margin: 1.4em 0; color: var(--ink-2); font-size: 14.5px;
+}
+article ul, article ol { padding-left: 1.4em; color: var(--ink-2); margin-bottom: 1.35em; }
+article li { margin-bottom: .4em; }
+article strong { color: var(--ink); }
+.article-cred { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--hairline); margin-top: 3em; padding-top: 16px; }
+
+footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var(--hairline); }
+.foot-inner { padding: clamp(32px, 4vw, 52px) 0 clamp(28px, 3vw, 40px); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+.next { font-size: 14.5px; font-weight: 500; text-decoration: none; color: var(--ink-2); border-bottom: 1px solid var(--hairline); padding-bottom: 3px; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.next:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+.foot-c { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="../index.html"><span class="dot"></span>林庆涛</a>
+    <a class="back" href="../index.html#writing">← 回主页 · 写作区</a>
+  </div>
+</nav>
+
+<header class="post-head">
+  <div class="wrap">
+    <div class="post-meta">
+      <span class="tag">博客 · 001</span>
+      <span>2026 · 09 · 28</span>
+      <span>约 9 分钟</span>
+      <span>AI 应用 · 方法论</span>
+    </div>
+    <h1 class="post-title">大模型应用的三个层次：<br>工具 → 工作流 → 决策</h1>
+    <p class="post-sub">从"问一句答一句"，到"端到端干完一件事"，再到"帮你发现机会"。这是我学完这门课、又亲手做了一个 Agent 项目之后，对大模型能力边界的整理。</p>
+    <hr class="post-rule">
+  </div>
+</header>
+
+<div class="wrap">
+  <article>
+    <p>大多数人第一次用大模型，都是在对话框里输入一句话、拿回一段文字。好用，但也仅此而已——你复制、粘贴、改格式，再问下一句。真正的效率差距，出现在你往上走两个层次之后。<b>工具 → 工作流 → 决策</b>，这三个词概括了大模型应用的全貌，也刚好对应我这半年三个阶段的使用方式。</p>
+
+    <h2><span class="no">L1</span>工具层：让大模型替你"写"和"读"</h2>
+    <p>第一层最常见：把大模型当成一个<b>极强的文本工具</b>，用三类操作覆盖日常——</p>
+    <ul>
+      <li><strong>内容生成</strong>：描述清楚需求，让它产出文案、报告段落、活动方案。比如"为一款具备心率监测、睡眠跟踪、防水功能的智能手表写一版广告文案"。</li>
+      <li><strong>摘要提取</strong>：面对会议纪要、长报告，让它提炼关键信息。预算数字、截止日期、待办事项，几秒钟归置清楚。</li>
+      <li><strong>推理分析</strong>：给它一份数据（比如三家门店三个月的销售额），让它梳理趋势、指出异常、给出建议。</li>
+    </ul>
+    <p>这一层的局限也很明显：<b>"发一句话拿到一段文字"能做的事有限。</b>耗时的工作往往不是回答一个问题，而是完成一件事过程中反复的手工调整——复制粘贴、改格式、逐页追问。这些正是第二层要解决的。</p>
+    <blockquote>我在学院融媒体中心的做法：把拆解任务、生成初稿、检查结果交给 AI，但每一步保留人工复核。顺手沉淀了一套可复用的提示词结构——这是从"会用"走向"稳定地用"的第一步。</blockquote>
+
+    <h2><span class="no">L2</span>工作流层：让智能体把整件事干完</h2>
+    <p>当 AI 能<b>调用工具、按计划连续推进</b>，它就不再是对话框，而是智能体（Agent）。区别在哪？普通对话一次给你一段内容；智能体接住的是"一批原始材料 + 目标结果"——它先给计划，再读文件、调工具、产出结果，过程中你可以随时确认、修正、追加要求。</p>
+    <p>两个典型场景：</p>
+    <ul>
+      <li><strong>生成接近成稿的交付物</strong>：把会议纪要、产品资料和数据表丢给它，它自己提炼主题、组织页面结构、补图表说明、统一视觉风格。你确认事实和判断，但从零整理和排版的负担消失了。</li>
+      <li><strong>做解决具体问题的小工具</strong>：很多需求太垂直（名单整理、复诊提醒、读书打卡），排不上任何人的开发计划。智能体能连续写代码、预览、按反馈调整，把"能看、能点、能试用"的东西直接交到你手上。</li>
+    </ul>
+    <p>如果同一个任务会被反复执行，还能沉淀成<b>数字员工</b>：按相近的标准反复处理同类工作，让组织里的重复经验被稳定复用。越接近真实业务，越要求结果可靠、过程可追溯、权限可控制。</p>
+    <blockquote>OpenJob 就是我把这一层用到极致的结果：岗位采集 → AI 五维评分 → JD 定向简历 → 人工确认投递 → HR 回复监测，五个环节一条流水线。我给自己的铁律是——<b>机器负责生成，人负责判断，是否投递永远由我按下放行键。</b>这也是它"本地优先、人工确认"设计哲学的由来。</blockquote>
+
+    <h2><span class="no">L3</span>决策层：让 AI 先把可能性筛出来</h2>
+    <p>前两层解决的都是"任务明确"的问题。第三层不一样：<b>你还不知道哪条路值得走</b>。这时 AI 的价值是先拆研究计划、多来源查找、比较观点、筛掉低质量信息，最后给出<b>带证据链的判断</b>。</p>
+    <p>课程里的案例很有代表性：达摩院的八观气象大模型融合多源数据做区域级逐小时预报；DeepMind 的 GNoME 在巨大的晶体结构空间里筛新材料候选，把研究者的精力引向更值得实验验证的方向。共同点不是"AI 给出了最终答案"，而是<b>"AI 把可能性先筛出来了"</b>。</p>
+    <p>我自己最深的体感来自职业规划：面对考研、考公、就业几条路，我让 AI 帮我查证市场数据、整理岗位画像、对比证据链——它没有替我决定，但它让我第一次拿全了做决定所需的原料。</p>
+
+    <h2><span class="no">∞</span>边界：三个层次共用的那条底线</h2>
+    <p>把三层放在一起看，会发现一条贯穿的底线：</p>
+    <ul>
+      <li><strong>L1</strong>，你判断生成的内容能不能用；</li>
+      <li><strong>L2</strong>，你判断智能体的计划和结果可不可信；</li>
+      <li><strong>L3</strong>，你判断 AI 筛出的方向值不值得投入。</li>
+    </ul>
+    <p>层次越高，AI 的自主性越强，但<b>"人负责判断"的位置从来没变，变的只是判断的对象</b>——从判断一段文字，到判断一个过程，再到判断一个方向。</p>
+    <p>所以如果你问我"该怎么开始用 AI"，我的答案一直很简单：从第一层老老实实用起来，攒下自己的提示词结构；等某个环节的重复劳动真的疼了，把它升级成第二层的工作流；最后在你最重大的决策上，让 AI 当那个帮你查资料、列证据的研究员——而签字的手，永远是你自己的。</p>
+
+    <p class="article-cred">本文基于《大模型工程师》课程第 1–3 章的知识框架整理，案例部分结合了我在融媒体中心、OpenJob 项目和职业规划中的实践。框架归课程，判断归我自己。</p>
+  </article>
+</div>
+
+<footer class="post-foot">
+  <div class="wrap foot-inner">
+    <a class="next" href="../index.html#writing">下一篇：OpenJob 复盘（写作中）→</a>
+    <span class="foot-c">© 2026 林庆涛 · 机器生成初稿 · 人工复核发布</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  window.addEventListener("scroll", function () {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
