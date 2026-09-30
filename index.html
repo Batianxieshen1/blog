@@ -125,7 +125,12 @@ nav.hidden { transform: translateY(-100%); }
   font-weight: 900; letter-spacing: .01em;
   font-size: clamp(25px, 3.2vw, 44px); line-height: 1.4; color: var(--ink);
 }
-.hero-title .hl { box-shadow: inset 0 -0.42em rgba(47, 95, 224, .16); }
+.hero-title .hl {
+  background-image: linear-gradient(rgba(47, 95, 224, .16), rgba(47, 95, 224, .16));
+  background-repeat: no-repeat;
+  background-size: 100% 82%;
+  background-position: 0 88%;
+}
 /* 遮罩揭示：一次性，820ms */
 .reveal-mask { display: inline-block; clip-path: inset(0 0 100% 0); animation: maskUp 820ms var(--ease) .15s forwards; }
 @keyframes maskUp { to { clip-path: inset(0 0 -8% 0); } }
@@ -154,6 +159,12 @@ nav.hidden { transform: translateY(-100%); }
   transition: transform var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
   will-change: transform;
 }
+.artifact:focus-visible { outline-offset: 4px; }
+.artifact { animation: cardBreath 9s ease-in-out infinite alternate; }
+.artifact.dash { animation-duration: 12s; animation-delay: -4s; }
+.artifact.chat { animation-duration: 14s; animation-delay: -7s; }
+.artifact.focus { animation-duration: 10s; animation-delay: -9s; }
+@keyframes cardBreath { from { scale: .985; } to { scale: 1.015; } }
 .artifact:hover { box-shadow: 0 26px 56px rgba(23, 22, 15, .14); z-index: 5; }
 .artifact .a-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .artifact .a-title i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
@@ -383,14 +394,16 @@ a.post-row { display: grid; }
 .hero::before {
   width: 560px; height: 560px; right: -160px; top: -140px;
   background: radial-gradient(circle, rgba(47, 95, 224, .09), transparent 62%);
-  animation: inkDrift 46s ease-in-out infinite alternate;
+  animation: inkDrift 46s ease-in-out infinite alternate, inkPulse1 7s ease-in-out infinite alternate;
 }
 .hero::after {
   width: 440px; height: 440px; left: -140px; bottom: -60px;
   background: radial-gradient(circle, rgba(47, 95, 224, .06), transparent 62%);
-  animation: inkDrift 58s ease-in-out infinite alternate-reverse;
+  animation: inkDrift 58s ease-in-out infinite alternate-reverse, inkPulse2 9s ease-in-out infinite alternate;
 }
 @keyframes inkDrift { to { transform: translate(-46px, 34px); } }
+@keyframes inkPulse1 { from { opacity: .5; } to { opacity: 1; } }
+@keyframes inkPulse2 { from { opacity: .45; } to { opacity: .9; } }
 .hero .wrap, .hero .marquee { position: relative; z-index: 1; }
 
 /* 印章（信头小印 + 页脚落款大印） */
@@ -407,15 +420,17 @@ a.post-row { display: grid; }
 .first-visit .hero-meta { animation-delay: 1.35s }
 .first-visit .marquee { animation: heroInFade 900ms var(--ease) 1.7s forwards }
 .first-visit .reveal-mask { animation-delay: .55s }
+.first-visit .hero-title .hl { background-size: 0% 82%; animation: inkWash 620ms var(--ease) 1.5s forwards; }
+@keyframes inkWash { to { background-size: 100% 82%; } }
 .first-visit .hero-eyebrow::after {
   content: ""; display: block; height: 1px; background: var(--hairline);
   transform: scaleX(0); transform-origin: left; animation: lineGrow 900ms var(--ease) .55s forwards;
 }
-.first-visit .artifact { opacity: 0; animation: heroInFade 800ms var(--ease) forwards; }
-.first-visit .artifact.term { animation-delay: 1.2s }
-.first-visit .artifact.dash { animation-delay: 1.35s }
-.first-visit .artifact.chat { animation-delay: 1.5s }
-.first-visit .artifact.focus { animation-delay: 1.65s }
+.first-visit .artifact { opacity: 0; animation: heroInFade 800ms var(--ease) forwards, cardBreath 9s ease-in-out 2.1s infinite alternate; }
+.first-visit .artifact.term { animation-delay: 1.2s, 2s; }
+.first-visit .artifact.dash { animation-delay: 1.35s, 6s; animation-duration: 800ms, 12s; }
+.first-visit .artifact.chat { animation-delay: 1.5s, 9s; animation-duration: 800ms, 14s; }
+.first-visit .artifact.focus { animation-delay: 1.65s, 11s; animation-duration: 800ms, 10s; }
 @keyframes heroInText { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes heroInFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes lineGrow { to { transform: scaleX(1); } }
@@ -875,6 +890,41 @@ a.post-row { display: grid; }
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute("content", dark ? "#f4f2ec" : "#14130f");
     });
+
+    /* morphicons 增强：月亮↔太阳弹簧变形（借鉴 guillermolg00/morphicons）。
+       CDN 全部失败时保持原双 SVG 切换，零风险降级。 */
+    if (!reduce) {
+      var MORPH_URLS = [
+        "https://esm.sh/morphicons@1/element",
+        "https://cdn.jsdelivr.net/npm/morphicons@1/element/+esm",
+        "https://fastly.jsdelivr.net/npm/morphicons@1/element/+esm"
+      ];
+      var MOON_D = "M21 12.8A8.5 8.5 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8z";
+      var SUN_D = "M12 8a4.2 4.2 0 1 0 0 8.4 4.2 4.2 0 0 0 0-8.4ZM12 2.5v2.6M12 18.9v2.6M4.93 4.93l1.66 1.66M17.66 17.66l1.66 1.66M2 12h2M20 12h2M6.34 17.66l-1.66 1.66M19.07 4.93l-1.66 1.66";
+      (function tryCdn(i) {
+        if (i >= MORPH_URLS.length) return;
+        import(MORPH_URLS[i]).then(function (m) {
+          var define = m.defineMorphIcon || (m.default && m.default.defineMorphIcon);
+          if (!define) throw new Error("no defineMorphIcon");
+          define();
+          var el = document.createElement("morph-icon");
+          var isDark = function () { return document.documentElement.getAttribute("data-theme") === "dark"; };
+          el.setAttribute("icon", isDark() ? SUN_D : MOON_D);
+          el.setAttribute("size", "15");
+          el.setAttribute("stroke-width", "1.8");
+          el.setAttribute("color", "currentColor");
+          el.setAttribute("aria-hidden", "true");
+          el.style.display = "block";
+          tt.innerHTML = "";
+          tt.appendChild(el);
+          tt.addEventListener("click", function () {
+            requestAnimationFrame(function () {
+              el.setAttribute("icon", isDark() ? SUN_D : MOON_D);
+            });
+          });
+        }).catch(function () { tryCdn(i + 1); });
+      })(0);
+    }
   }
 
   /* ---------- 阅读进度条 + Hero 滚动视差 ---------- */
