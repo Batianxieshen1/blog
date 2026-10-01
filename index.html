@@ -275,6 +275,12 @@ footer { margin-top: clamp(80px, 11vw, 150px); background: var(--ink); color: va
 .foot-base { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: clamp(48px, 7vw, 88px); padding-top: 22px; border-top: 1px solid rgba(244, 242, 236, .16); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: rgba(244, 242, 236, .48); }
 .foot-base a { border-bottom: 1px solid rgba(244, 242, 236, .3); transition: color var(--dur-fast) var(--ease); }
 .foot-base a:hover { color: var(--paper); }
+.ps-line {
+  margin-top: 22px; padding-top: 18px; border-top: 1px dashed rgba(244, 242, 236, .18);
+  font-size: 14px; color: rgba(244, 242, 236, .6);
+}
+.ps-line a { color: rgba(244, 242, 236, .85); border-bottom: 1px dotted rgba(244, 242, 236, .4); text-decoration: none; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.ps-line a:hover { color: var(--paper); border-color: var(--paper); }
 
 /* ============ 暗色模式 ============ */
 :root { --card: #fff; --nav-bg: rgba(244, 242, 236, .82); }
@@ -286,6 +292,23 @@ footer { margin-top: clamp(80px, 11vw, 150px); background: var(--ink); color: va
 }
 [data-theme="dark"] body::after { opacity: .05; }
 [data-theme="dark"] .marquee { background: var(--paper); }
+[data-theme="dark"] body::after { opacity: .05; }
+[data-theme="dark"] .marquee { background: var(--paper); }
+/* 暗色：墨晕换成带星尘的夜色晕 */
+[data-theme="dark"] .hero::before {
+  background-image:
+    radial-gradient(1px 1px at 14% 24%, rgba(236, 233, 223, .65), transparent 55%),
+    radial-gradient(1.4px 1.4px at 38% 56%, rgba(236, 233, 223, .45), transparent 55%),
+    radial-gradient(1px 1px at 60% 30%, rgba(236, 233, 223, .55), transparent 55%),
+    radial-gradient(1.2px 1.2px at 78% 68%, rgba(236, 233, 223, .4), transparent 55%),
+    radial-gradient(circle, rgba(123, 147, 242, .1), transparent 62%);
+}
+[data-theme="dark"] .hero::after {
+  background-image:
+    radial-gradient(1px 1px at 22% 40%, rgba(236, 233, 223, .5), transparent 55%),
+    radial-gradient(1.3px 1.3px at 52% 70%, rgba(236, 233, 223, .4), transparent 55%),
+    radial-gradient(circle, rgba(123, 147, 242, .07), transparent 62%);
+}
 
 /* ============ 阅读进度条 ============ */
 #progress {
@@ -540,8 +563,8 @@ a.post-row { display: grid; }
 
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
-      <span>AI AGENT 工作流 <em>✦</em> PROMPT ENGINEERING <em>✦</em> 数据分析 <em>✦</em> PYTHON <em>✦</em> 内容运营 <em>✦</em> 团队管理 <em>✦</em> 产品思维 <em>✦</em></span>
-      <span>AI AGENT 工作流 <em>✦</em> PROMPT ENGINEERING <em>✦</em> 数据分析 <em>✦</em> PYTHON <em>✦</em> 内容运营 <em>✦</em> 团队管理 <em>✦</em> 产品思维 <em>✦</em></span>
+      <span>AI AGENT 工作流 <em>✦</em> PROMPT ENGINEERING <em>✦</em> 数据分析 <em>✦</em> PYTHON <em>✦</em> 内容运营 <em>✦</em> 团队管理 <em>✦</em> 产品思维 <em>✦</em> 说不如做 <em>✦</em></span>
+      <span>AI AGENT 工作流 <em>✦</em> PROMPT ENGINEERING <em>✦</em> 数据分析 <em>✦</em> PYTHON <em>✦</em> 内容运营 <em>✦</em> 团队管理 <em>✦</em> 产品思维 <em>✦</em> 说不如做 <em>✦</em></span>
     </div>
   </div>
 </header>
@@ -654,11 +677,11 @@ a.post-row { display: grid; }
           <span class="p-status published">已发布</span>
         </a>
         <!-- 有个人公众号后可在此加行：<a class="post-row" href="公众号链接">…<span class="p-status">公众号同步</span></a> -->
-        <div class="post-row rv">
-          <span class="p-date">2026 · 11</span>
+        <a class="post-row rv" href="posts/config-driven.html">
+          <span class="p-date">2026 · 09</span>
           <span class="p-title">配置驱动思维：换数据集不用改代码的数据分析框架</span>
-          <span class="p-status">计划中</span>
-        </div>
+          <span class="p-status published">已发布</span>
+        </a>
         <div class="post-row rv">
           <span class="p-date">2026 · 11</span>
           <span class="p-title">一个人带 12 人内容团队：流程、节奏与 AI 的位置</span>
@@ -675,7 +698,7 @@ a.post-row { display: grid; }
       <p class="sec-intro rv">一行一行<span class="accent-dot">，</span>走成现在的样子。</p>
       <div class="about-grid">
         <div class="about-copy rv">
-          <div class="now-pill"><i></i>NOW — 博客更新中 · 正在做新的东西</div>
+          <div class="now-pill"><i></i>NOW — 博客更新中（3 篇札记）· <a href="now/" style="color:inherit;border-bottom:1px dotted rgba(157,177,245,.6)">此刻的完整清单在 /now</a></div>
           <p>没有署名，只有造物 —— 这个页面上的每一个项目、每一段字，都出自同一双手。</p>
           <p>路径不太典型：从内容运营和团队管理入门，一头扎进数据和 AI，最后发现真正让我兴奋的是<b>把大模型做成别人真的在用的东西</b> —— 所以我写了 OpenJob，也把它背后的方法论写成文章。</p>
           <p>信条很简单：<b>机器负责生成，人负责判断。</b>效率交给工具，责任留给自己。</p>
@@ -729,6 +752,7 @@ a.post-row { display: grid; }
       <span id="busuanzi_container_site_pv" style="display:none">本页被看过 <b id="busuanzi_value_site_pv"></b> 次 · </span>
       <span>本页由 AI 辅助构建 · <a href="#top">人工复核后发布</a> ↑</span>
     </div>
+    <p class="ps-line rv">P.S. 这封信已经改了十二版 —— <a href="revisions/">每一版的手稿都留在这里</a>。此刻我在做什么，写在 <a class="now-link" href="now/">/now</a>。</p>
   </div>
 </footer>
 

@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数据研究两篇：绩效评价与波动预测 — 蓝纸</title>
-<meta name="description" content="两个独立完成的数据研究：新能源上市公司经营绩效综合评价（108 家企业 · PCA 降维分层），与 CPI·PPI·社零波动预测（VAR + SARIMA）。">
+<title>配置驱动思维：换数据集不用改代码的数据分析框架 — 蓝纸</title>
+<meta name="description" content="把数据源、字段映射、指标定义、分层规则全部抽离成 JSON 配置——一个换数据集不用改一行代码的分析引擎，是怎么想的，又有哪些边界。">
 <meta name="theme-color" content="#f4f2ec">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-size='34' font-family='PingFang SC, Microsoft YaHei, sans-serif' font-weight='700' fill='%23f4f2ec' text-anchor='middle'%3E林%3C/text%3E%3Ccircle cx='50' cy='14' r='4' fill='%232f5fe0'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%232f5fe0'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%232f5fe0' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E">
 <script>
 (function () {
   try {
@@ -57,8 +57,12 @@ nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shado
 .back:hover { color: var(--accent-ink); }
 
 header.post-head { padding: 140px 0 0; }
-.post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
-.post-meta .tag { color: var(--accent-ink); }
+.post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.post-meta .stamp {
+  font-family: var(--font-mono); color: var(--accent-ink);
+  border: 1.5px solid var(--accent-ink); border-radius: 6px; padding: 2px 10px;
+  transform: rotate(-2deg); display: inline-block; background: transparent;
+}
 h1.post-title { font-weight: 900; font-size: clamp(26px, 3.4vw, 42px); line-height: 1.4; margin: 18px 0 10px; }
 .post-sub { font-size: clamp(15px, 1.6vw, 17.5px); color: var(--ink-2); max-width: 40em; }
 .post-rule { border: 0; border-top: 1px solid var(--hairline); margin: clamp(30px, 4vw, 48px) 0 0; }
@@ -76,22 +80,23 @@ article blockquote {
 article ul, article ol { padding-left: 1.4em; color: var(--ink-2); margin-bottom: 1.35em; }
 article li { margin-bottom: .4em; }
 article strong { color: var(--ink); }
+article pre {
+  background: var(--paper-2); border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 14px 18px; overflow-x: auto; font-family: var(--font-mono);
+  font-size: 13px; color: var(--ink-2); margin: 1.4em 0; line-height: 1.7;
+}
 .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; margin: 1.4em 0; }
 .kpi-row div { background: var(--card); padding: 14px 16px; }
 .kpi-row b { display: block; font-family: var(--font-mono); font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .kpi-row span { font-size: 11.5px; color: var(--muted); }
 .article-cred { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--hairline); margin-top: 3em; padding-top: 16px; }
+.article-cred a { color: var(--accent-ink); }
 
 footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var(--hairline); }
 .foot-inner { padding: clamp(32px, 4vw, 52px) 0 clamp(28px, 3vw, 40px); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
 .next { font-size: 14.5px; font-weight: 500; text-decoration: none; color: var(--ink-2); border-bottom: 1px solid var(--hairline); padding-bottom: 3px; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
 .next:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
 .foot-c { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
-.post-meta .stamp { border: 1.5px solid var(--accent-ink); border-radius: 6px; padding: 2px 10px; transform: rotate(-2deg); color: var(--accent-ink); display: inline-block; }
-
-.comments { max-width: 720px; margin: clamp(40px, 6vw, 72px) auto 0; }
-.c-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; }
-.c-fallback { font-size: 14px; color: var(--muted); }
 
 @media (max-width: 720px) { .kpi-row { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {
@@ -104,63 +109,69 @@ footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var
 <nav id="nav">
   <div class="wrap nav-inner">
     <a class="logo" href="../index.html"><span class="dot"></span>蓝纸</a>
-    <a class="back" href="../index.html#works">← 回主页 · 作品区</a>
+    <a class="back" href="../index.html#writing">← 回主页 · 札记</a>
   </div>
 </nav>
 
 <header class="post-head">
   <div class="wrap">
     <div class="post-meta">
-      <span class="tag stamp">档案 · 双篇</span>
-      <span>2026 · 06 完成</span>
-      <span>PCA · 聚类 · VAR · SARIMA</span>
+      <span class="stamp">第 003 封</span>
+      <span>2026 · 09 · 28</span>
+      <span>约 10 分钟</span>
+      <span>数据 · 架构思维</span>
     </div>
-    <h1 class="post-title">数据研究两篇：<br>绩效评价与波动预测</h1>
-    <p class="post-sub">一个是横截面问题——108 家新能源公司，谁的经营质量更好？一个是时间序列问题——CPI、PPI 与消费的联动如何传导、能否预测？两篇都是独立完成、全流程自动出报告。</p>
+    <h1 class="post-title">配置驱动思维：<br>换数据集不用改代码的数据分析框架</h1>
+    <p class="post-sub">每次换一个数据集就重写一遍脚本——直到我把"改代码"变成"改配置"。这个框架后来成了我理解"AI 自动化"的底层模型。</p>
     <hr class="post-rule">
   </div>
 </header>
 
 <div class="wrap">
   <article>
-    <h2><span class="no">A</span>新能源上市公司经营绩效综合评价与风险判别</h2>
-    <p><b>问题</b>：新能源赛道内部分化剧烈——电池、光伏、风电、燃料电池各走各的周期。只看利润表分不出好公司和风险公司，需要一个多维评价体系把优质标的和风险标的分开。</p>
+    <p>做数据分析的人大多经历过这种循环：拿到一份新数据集，打开上次的脚本，从头改到尾——改列名、改路径、改指标口径、改图表配置。改完发现逻辑和上次一模一样，<b>变的只有数据的"名字"</b>。</p>
+    <p>我给自己提了一个问题：<b>能不能让"换数据集"这件事，变成只改一个文件？</b></p>
+
+    <h2><span class="no">01</span>答案：把"变的部分"和"不变的部分"拆开</h2>
+    <p>我把它做成了一个可复用的分析框架，核心只有一句话：<b>数据源、字段映射、指标定义、用户分层规则，全部抽离成一个 JSON 配置文件；分析引擎只读配置、不认识任何具体数据集。</b></p>
+    <pre>
+analysis_config.json   ← 唯一需要修改的文件
+        ↓
+run_analysis.py        ← 通用引擎：读配置执行
+        ↓
+┌──────────┬──────────┬──────────┐
+│ 宽表构建 │ 指标计算 │ 行为模拟 │
+└──────────┴──────────┴──────────┘
+        ↓
+  JSON 数据 → Next.js 看板自动渲染
+        ↓
+   PDF / Word 报告一键导出
+    </pre>
+    <p>换数据集时只走三步：把新数据整理成约定格式放进目录 → 改 JSON 里的字段映射和业务规则 → 跑一条命令。指标计算（GMV、DAU、转化漏斗、留存 Cohort、RFM 分层）和可视化看板全部自动跟上。</p>
+    <blockquote>判断"配置驱动"是否值得的最简单标准：这套逻辑你会不会用第二次。只用一次的东西，写死反而更快。</blockquote>
+
+    <h2><span class="no">02</span>验证：Olist 巴西电商，9.8 万笔订单</h2>
+    <p>空谈架构没有意义，我拿 Kaggle 上的 Olist 巴西电商公开数据集做了端到端验证：</p>
     <div class="kpi-row">
-      <div><b>108</b><span>家上市公司样本</span></div>
-      <div><b>16</b><span>个指标 · 5 个维度</span></div>
-      <div><b>83.98%</b><span>6 个主成分累计贡献率</span></div>
+      <div><b>9.8 万</b><span>笔订单 · 端到端跑通</span></div>
+      <div><b>¥2,000w</b><span>GMV 级别的完整指标链路</span></div>
+      <div><b>0 行</b><span>适配新数据集所需的代码改动</span></div>
     </div>
-    <h3>做法</h3>
+    <p>总览、增长诊断、用户分层三个看板页面自动渲染，分析报告支持 Word 与 PDF 一键导出。整个过程我改的只有那个 JSON 文件。</p>
+
+    <h2><span class="no">03</span>延伸：这个思维不止用于数据</h2>
+    <p>写完这个框架我意识到，<b>配置驱动是一种通用的拆解方式</b>——把一件重复的事拆成"不变的引擎"和"可变的参数"，然后让引擎去消化参数。</p>
     <ul>
-      <li><strong>取数</strong>：用 akshare 抓取东方财富 + 新浪财经 2025 年年报数据，构建规模、盈利、成长、偿债、运营 5 维度 16 指标体系；</li>
-      <li><strong>降维</strong>：VIF 诊断 + 典型相关分析处理共线性；PCA 提取 6 个主成分（累计贡献率 83.98%，KMO=0.721），再用因子分析 Varimax 旋转交叉验证；</li>
-      <li><strong>分层</strong>：K-Means 与 Ward 层次聚类按轮廓系数择优，把企业划成 A/B/C 三级风险梯队；LDA/QDA 五折交叉验证检验分类稳定性。</li>
+      <li>后来写 OpenJob 时，我把求职流程做成了同样的结构：采集关键词、城市、评分规则、简历底稿选择，全是配置；采集、评分、生成简历是引擎。换一个求职方向 = 换一份配置。</li>
+      <li>带内容团队时也一样：选题方向、发布节奏、审校清单是配置，产出流程是引擎。新成员上手 = 拿到一份配置文件。</li>
     </ul>
-    <h3>发现</h3>
-    <p>构建出 PCA+FA 加权综合评价模型，完成 108 家企业绩效排序与三级分层。四大赛道的画像差异清晰：<b>电池龙头综合领先，光伏两极分化，风电稳健低波动</b>。全流程 Python 实现，自动输出 Word + PDF 双格式报告。</p>
-    <blockquote>方法论上最大的收获：降维不是目的，"可解释的降维"才是。PCA 结果必须和 Varimax 旋转后的因子结构互相印证，才敢拿去给企业分层。</blockquote>
+    <p>当然它有边界：<b>配置化本身有成本</b>——抽象需要时间，配置文件会变复杂，过度配置化会把简单的事情搞绕。我的判断标准始终是那句话：<b>这套逻辑会被用第二次吗？</b>会，就抽；不会，就让它简单地去。</p>
 
-    <h2><span class="no">B</span>CPI、PPI 与社零的多元时间序列波动分析与短期预测</h2>
-    <p><b>问题</b>：物价波动如何向消费传导？哪种模型对消费走势的短期预测更准？这是政策制定的核心依据之一。</p>
-    <div class="kpi-row">
-      <div><b>181</b><span>期月度数据（2008-2025）</span></div>
-      <div><b>3</b><span>个变量联动建模</span></div>
-      <div><b>6 期</b><span>滚动预测对比</span></div>
-    </div>
-    <h3>做法</h3>
-    <ul>
-      <li><strong>预处理</strong>：爬取 2008-2025 年 CPI、PPI、社零月度数据，对数变换 + 季节性分解；</li>
-      <li><strong>检验</strong>：ADF 检验判断平稳性，协整检验验证三变量长期均衡关系；</li>
-      <li><strong>建模</strong>：VAR 模型刻画短期联动，输出脉冲响应函数；ARIMA 与 SARIMA 网格搜索（AIC/BIC 择优）做 6 期滚动预测对比，Ljung-Box 检验确认残差白噪声。</li>
-    </ul>
-    <h3>发现</h3>
-    <p>SARIMA 在季节性消费序列上 MAE/RMSE 全面优于 ARIMA；脉冲响应揭示了 <b>CPI 冲击向社零传导的 3 期路径</b>——物价的变动不是当月就体现在消费上，而是有一个可量化的时滞。同样全流程自动生成双格式报告。</p>
-    <blockquote>这两篇研究教会我的共同一课：模型选型永远是"数据说话"——季节性明显的序列别硬用 ARIMA，共线性严重的指标别硬塞进模型。检验跑在建模前面，结论才立得住。</blockquote>
+    <h2><span class="no">04</span>和"人机分工"的关系</h2>
+    <p>上一篇写 OpenJob 时我说"机器负责生成，人负责判断"。配置驱动是这句话的工程实现：<b>你把判断写进配置（什么算好岗位、什么算高价值用户），机器按配置执行重复劳动</b>。配置改错了，结果就错——所以配置本身需要被复核，就像 AI 的输出需要被复核一样。</p>
+    <p>框架已在 GitHub 开源，三步接入文档写在 README 里。如果你也有"每次都在改同一类脚本"的疲惫，欢迎拿去试。</p>
 
-    <h2><span class="no">→</span>这两篇研究在说什么</h2>
-    <p>单看技术栈（akshare、PCA、K-Means、VAR、SARIMA）只是工具箱；把它们连起来看，是一条完整的路径：<b>从原始数据出发，经过检验、降维、建模、验证，最后落成一份别人拿得起走的报告。</b>这也是我对"数据素养"的理解——不是会调包，而是每一步都knows why，每个结论都有出处。</p>
-
-    <p class="article-cred">两篇研究独立完成于 2026 年 6 月，方法与数据细节以研究报告为准。如需查看代码与报告样例，欢迎通过主页联系方式找我。</p>
+    <p class="article-cred">框架地址：<a href="https://github.com/Batianxieshen1/ecommerce-growth-analysis" target="_blank" rel="noopener">github.com/Batianxieshen1/ecommerce-growth-analysis</a>，看板线上版在主页"造物"区可直达。开源协议 MIT。</p>
   </article>
 
   <section class="comments" aria-label="留言与讨论">
@@ -187,7 +198,6 @@ footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var
     nav.classList.toggle("scrolled", window.scrollY > 24);
   }, { passive: true });
 
-  /* giscus 评论区：主题跟随站点 */
   var mount = document.getElementById("giscus-mount");
   if (mount) {
     var s = document.createElement("script");
