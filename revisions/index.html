@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>这封信的修订记录 — 蓝纸</title>
+<meta name="description" content="蓝纸的每一版手稿：这个网站怎么从一封短信长成现在这样。">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f4f2ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%232f5fe0'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%232f5fe0' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E">
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f4f2ec; --paper-2: #ece9e0; --card: #fff;
+  --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #14130f; --paper-2: #1c1b16; --card: #1b1a15; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body); background: var(--paper); color: var(--ink);
+  line-height: 1.9; -webkit-font-smoothing: antialiased; padding: clamp(48px, 8vw, 96px) 24px;
+}
+.wrap { max-width: 720px; margin: 0 auto; }
+.back { font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-decoration: none; color: #77746a; }
+.back:hover { color: #2449b8; }
+h1 { font-weight: 900; font-size: clamp(28px, 5vw, 44px); line-height: 1.3; margin: 22px 0 10px; }
+.lead { color: #43413a; font-size: 16.5px; margin-bottom: 8px; }
+.rule { border: 0; border-top: 1px solid var(--hairline); margin: 30px 0 0; }
+.ver { display: grid; grid-template-columns: 150px 1fr; gap: 20px; padding: 26px 0; border-bottom: 1px solid var(--hairline); }
+.ver:first-of-type { border-top: 1px solid var(--hairline); margin-top: 30px; }
+.ver .v-tag { font-family: var(--font-mono); font-size: 13px; color: #2449b8; letter-spacing: .06em; }
+.ver .v-tag .v-date { display: block; color: #77746a; font-size: 11.5px; margin-top: 4px; }
+.ver h2 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.ver p { font-size: 14.5px; color: #43413a; }
+.ver ul { padding-left: 1.3em; font-size: 14px; color: #43413a; margin-top: 8px; }
+.ver li { margin-bottom: .3em; }
+.foot { margin-top: 40px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: #77746a; }
+.foot a { color: inherit; border-bottom: 1px solid #dcd8cb; }
+@media (max-width: 640px) { .ver { grid-template-columns: 1fr; gap: 6px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← 回主页</a>
+  <h1>这封信的修订记录</h1>
+  <p class="lead">蓝纸不是一次写成的。每一版都像重写一遍信——有些话删了，有些话补上了。手稿都留着，按时间倒序：</p>
+  <hr class="rule">
+
+  <div class="ver">
+    <div class="v-tag">v1.2-letter<span class="v-date">2026 · 09 · 30</span></div>
+    <div>
+      <h2>把"信"写成了一个宇宙</h2>
+      <ul>
+        <li>首次访问有了"开信仪式"：信头线绘出、内容错峰登场（回访自动跳过）</li>
+        <li>加了印章：信头一枚小的，"见字如面。"旁一枚大的</li>
+        <li>信头有了日期："写于 2026 年秋 · 广州"</li>
+        <li>每个栏目配了一句引言；墨晕开始呼吸；加了现在这页（/now）和这一页</li>
+        <li>暗色模式下墨晕变成星尘</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ver">
+    <div class="v-tag">v1.1-motion<span class="v-date">2026 · 09 · 29</span></div>
+    <div>
+      <h2>它学会了动</h2>
+      <ul>
+        <li>主题切换的图标会变形了（月亮扭成太阳，弹簧物理，借鉴 morphicons）</li>
+        <li>四张悬浮卡片开始呼吸；墨晕有了脉冲</li>
+        <li>首次开信时，标题的蓝色高亮像笔触一样扫出</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ver">
+    <div class="v-tag">v1.0-lanzhi<span class="v-date">2026 · 09 · 28</span></div>
+    <div>
+      <h2>初稿：一封公开的信</h2>
+      <ul>
+        <li>定稿了署名方式——没有署名，只有造物</li>
+        <li>栏目定了名：造物、底色、札记、来路、信箱</li>
+        <li>五件造物陈列完毕，两篇札记上线，评论区开放</li>
+        <li>搬进了 GitHub Pages，灯是暖的，纸是米白的</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot">修订手稿（开发者视角）见 <a href="https://github.com/Batianxieshen1/blog/blob/main/CHANGELOG.md" target="_blank" rel="noopener">仓库 CHANGELOG</a> · © 2026 蓝纸</p>
+</div>
+</body>
+</html>

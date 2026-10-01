@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 · 页面走丢了 — 蓝纸</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ctext x='32' y='44' font-size='34' font-family='PingFang SC, Microsoft YaHei, sans-serif' font-weight='700' fill='%23f4f2ec' text-anchor='middle'%3E林%3C/text%3E%3Ccircle cx='50' cy='14' r='4' fill='%232f5fe0'/%3E%3C/svg%3E">
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f4f2ec; --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent-ink: #2449b8;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #14130f; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent-ink: #9db1f5; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--paper); color: var(--ink); min-height: 100svh;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-font-smoothing: antialiased; padding: 24px; text-align: center;
+}
+.big {
+  font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+  font-weight: 900; font-size: clamp(96px, 22vw, 220px); line-height: 1; letter-spacing: .02em;
+}
+.big em { font-style: normal; color: var(--accent-ink); }
+h1 { font-size: clamp(18px, 2.6vw, 24px); font-weight: 700; margin: 10px 0 8px; }
+p { color: var(--muted); font-size: 14.5px; margin-bottom: 30px; }
+a.btn {
+  display: inline-block; text-decoration: none; font-size: 14px; font-weight: 500;
+  background: var(--ink); color: var(--paper); border-radius: 99px; padding: 12px 28px;
+  transition: transform 160ms var(--ease);
+}
+a.btn:hover { transform: translateY(-2px); }
+.hint { margin-top: 26px; font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="big">4<em>0</em>4</div>
+  <h1>这页不存在，或者还没写。</h1>
+  <p>也可能它正在"写作中"的清单里排队。如果你是从某篇文章的旧链接来到这里——说明我改过门牌，<a href="/blog/" style="color:var(--accent-ink)">回札记区找找</a>。</p>
+  <a class="btn" href="/">← 回主页</a>
+  <div class="hint">© 2026 蓝纸 · BLUE PAPER</div>
+</main>
+</body>
+</html>

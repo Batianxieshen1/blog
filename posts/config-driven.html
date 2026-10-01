@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>配置驱动思维：换数据集不用改代码的数据分析框架 — 蓝纸</title>
+<meta name="description" content="把数据源、字段映射、指标定义、分层规则全部抽离成 JSON 配置——一个换数据集不用改一行代码的分析引擎，是怎么想的，又有哪些边界。">
+<meta name="theme-color" content="#f4f2ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%232f5fe0'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%232f5fe0' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+@view-transition { navigation: auto; }
+:root {
+  --paper: #f4f2ec; --paper-2: #ece9e0; --card: #fff;
+  --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8;
+  --nav-bg: rgba(244, 242, 236, .82);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms; --dur-med: 280ms;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
+}
+[data-theme="dark"] {
+  --paper: #14130f; --paper-2: #1c1b16; --card: #1b1a15;
+  --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80;
+  --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
+  --nav-bg: rgba(20, 19, 15, .8);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body); background: var(--paper); color: var(--ink);
+  line-height: 1.9; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+::selection { background: var(--accent); color: #fff; }
+a { color: inherit; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: background 320ms var(--ease), box-shadow 320ms var(--ease); }
+nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--hairline); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.logo { font-weight: 700; font-size: 17px; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.back { font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-decoration: none; color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
+.back:hover { color: var(--accent-ink); }
+
+header.post-head { padding: 140px 0 0; }
+.post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.post-meta .stamp {
+  font-family: var(--font-mono); color: var(--accent-ink);
+  border: 1.5px solid var(--accent-ink); border-radius: 6px; padding: 2px 10px;
+  transform: rotate(-2deg); display: inline-block; background: transparent;
+}
+h1.post-title { font-weight: 900; font-size: clamp(26px, 3.4vw, 42px); line-height: 1.4; margin: 18px 0 10px; }
+.post-sub { font-size: clamp(15px, 1.6vw, 17.5px); color: var(--ink-2); max-width: 40em; }
+.post-rule { border: 0; border-top: 1px solid var(--hairline); margin: clamp(30px, 4vw, 48px) 0 0; }
+
+article { max-width: 720px; margin: 0 auto; padding: clamp(36px, 5vw, 64px) 0 0; font-size: 16px; }
+article p { color: var(--ink-2); margin-bottom: 1.35em; }
+article p b { color: var(--ink); }
+article h2 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; margin: 2.2em 0 .8em; line-height: 1.5; }
+article h2 .no { font-family: var(--font-mono); font-size: .62em; color: var(--accent-ink); letter-spacing: .12em; vertical-align: 3px; margin-right: 10px; }
+article h3 { font-size: 17px; font-weight: 700; margin: 1.6em 0 .6em; color: var(--ink); }
+article blockquote {
+  border-left: 3px solid var(--accent); background: var(--paper-2);
+  padding: 14px 20px; border-radius: 0 12px 12px 0; margin: 1.4em 0; color: var(--ink-2); font-size: 14.5px;
+}
+article ul, article ol { padding-left: 1.4em; color: var(--ink-2); margin-bottom: 1.35em; }
+article li { margin-bottom: .4em; }
+article strong { color: var(--ink); }
+article pre {
+  background: var(--paper-2); border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 14px 18px; overflow-x: auto; font-family: var(--font-mono);
+  font-size: 13px; color: var(--ink-2); margin: 1.4em 0; line-height: 1.7;
+}
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; margin: 1.4em 0; }
+.kpi-row div { background: var(--card); padding: 14px 16px; }
+.kpi-row b { display: block; font-family: var(--font-mono); font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.kpi-row span { font-size: 11.5px; color: var(--muted); }
+.article-cred { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--hairline); margin-top: 3em; padding-top: 16px; }
+.article-cred a { color: var(--accent-ink); }
+
+footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var(--hairline); }
+.foot-inner { padding: clamp(32px, 4vw, 52px) 0 clamp(28px, 3vw, 40px); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+.next { font-size: 14.5px; font-weight: 500; text-decoration: none; color: var(--ink-2); border-bottom: 1px solid var(--hairline); padding-bottom: 3px; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.next:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+.foot-c { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
+
+@media (max-width: 720px) { .kpi-row { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="../index.html"><span class="dot"></span>蓝纸</a>
+    <a class="back" href="../index.html#writing">← 回主页 · 札记</a>
+  </div>
+</nav>
+
+<header class="post-head">
+  <div class="wrap">
+    <div class="post-meta">
+      <span class="stamp">第 003 封</span>
+      <span>2026 · 09 · 28</span>
+      <span>约 10 分钟</span>
+      <span>数据 · 架构思维</span>
+    </div>
+    <h1 class="post-title">配置驱动思维：<br>换数据集不用改代码的数据分析框架</h1>
+    <p class="post-sub">每次换一个数据集就重写一遍脚本——直到我把"改代码"变成"改配置"。这个框架后来成了我理解"AI 自动化"的底层模型。</p>
+    <hr class="post-rule">
+  </div>
+</header>
+
+<div class="wrap">
+  <article>
+    <p>做数据分析的人大多经历过这种循环：拿到一份新数据集，打开上次的脚本，从头改到尾——改列名、改路径、改指标口径、改图表配置。改完发现逻辑和上次一模一样，<b>变的只有数据的"名字"</b>。</p>
+    <p>我给自己提了一个问题：<b>能不能让"换数据集"这件事，变成只改一个文件？</b></p>
+
+    <h2><span class="no">01</span>答案：把"变的部分"和"不变的部分"拆开</h2>
+    <p>我把它做成了一个可复用的分析框架，核心只有一句话：<b>数据源、字段映射、指标定义、用户分层规则，全部抽离成一个 JSON 配置文件；分析引擎只读配置、不认识任何具体数据集。</b></p>
+    <pre>
+analysis_config.json   ← 唯一需要修改的文件
+        ↓
+run_analysis.py        ← 通用引擎：读配置执行
+        ↓
+┌──────────┬──────────┬──────────┐
+│ 宽表构建 │ 指标计算 │ 行为模拟 │
+└──────────┴──────────┴──────────┘
+        ↓
+  JSON 数据 → Next.js 看板自动渲染
+        ↓
+   PDF / Word 报告一键导出
+    </pre>
+    <p>换数据集时只走三步：把新数据整理成约定格式放进目录 → 改 JSON 里的字段映射和业务规则 → 跑一条命令。指标计算（GMV、DAU、转化漏斗、留存 Cohort、RFM 分层）和可视化看板全部自动跟上。</p>
+    <blockquote>判断"配置驱动"是否值得的最简单标准：这套逻辑你会不会用第二次。只用一次的东西，写死反而更快。</blockquote>
+
+    <h2><span class="no">02</span>验证：Olist 巴西电商，9.8 万笔订单</h2>
+    <p>空谈架构没有意义，我拿 Kaggle 上的 Olist 巴西电商公开数据集做了端到端验证：</p>
+    <div class="kpi-row">
+      <div><b>9.8 万</b><span>笔订单 · 端到端跑通</span></div>
+      <div><b>¥2,000w</b><span>GMV 级别的完整指标链路</span></div>
+      <div><b>0 行</b><span>适配新数据集所需的代码改动</span></div>
+    </div>
+    <p>总览、增长诊断、用户分层三个看板页面自动渲染，分析报告支持 Word 与 PDF 一键导出。整个过程我改的只有那个 JSON 文件。</p>
+
+    <h2><span class="no">03</span>延伸：这个思维不止用于数据</h2>
+    <p>写完这个框架我意识到，<b>配置驱动是一种通用的拆解方式</b>——把一件重复的事拆成"不变的引擎"和"可变的参数"，然后让引擎去消化参数。</p>
+    <ul>
+      <li>后来写 OpenJob 时，我把求职流程做成了同样的结构：采集关键词、城市、评分规则、简历底稿选择，全是配置；采集、评分、生成简历是引擎。换一个求职方向 = 换一份配置。</li>
+      <li>带内容团队时也一样：选题方向、发布节奏、审校清单是配置，产出流程是引擎。新成员上手 = 拿到一份配置文件。</li>
+    </ul>
+    <p>当然它有边界：<b>配置化本身有成本</b>——抽象需要时间，配置文件会变复杂，过度配置化会把简单的事情搞绕。我的判断标准始终是那句话：<b>这套逻辑会被用第二次吗？</b>会，就抽；不会，就让它简单地去。</p>
+
+    <h2><span class="no">04</span>和"人机分工"的关系</h2>
+    <p>上一篇写 OpenJob 时我说"机器负责生成，人负责判断"。配置驱动是这句话的工程实现：<b>你把判断写进配置（什么算好岗位、什么算高价值用户），机器按配置执行重复劳动</b>。配置改错了，结果就错——所以配置本身需要被复核，就像 AI 的输出需要被复核一样。</p>
+    <p>框架已在 GitHub 开源，三步接入文档写在 README 里。如果你也有"每次都在改同一类脚本"的疲惫，欢迎拿去试。</p>
+
+    <p class="article-cred">框架地址：<a href="https://github.com/Batianxieshen1/ecommerce-growth-analysis" target="_blank" rel="noopener">github.com/Batianxieshen1/ecommerce-growth-analysis</a>，看板线上版在主页"造物"区可直达。开源协议 MIT。</p>
+  </article>
+
+  <section class="comments" aria-label="留言与讨论">
+    <hr class="post-rule">
+    <h2 class="c-title">留言与讨论</h2>
+    <div id="giscus-mount"></div>
+    <noscript><p class="c-fallback">留言功能需要 JavaScript，也可以直接 <a href="https://github.com/Batianxieshen1/blog/discussions" target="_blank" rel="noopener">去 GitHub 讨论区</a>。</p></noscript>
+  </section>
+</div>
+
+<footer class="post-foot">
+  <div class="wrap foot-inner">
+    <a class="next" href="openjob-retro.html">上一篇：OpenJob 复盘 →</a>
+    <a class="next" href="https://github.com/Batianxieshen1/blog/discussions" target="_blank" rel="noopener">💬 去讨论区留言</a>
+    <span class="foot-c">© 2026 蓝纸 · 机器生成初稿 · 人工复核发布</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  window.addEventListener("scroll", function () {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  }, { passive: true });
+
+  var mount = document.getElementById("giscus-mount");
+  if (mount) {
+    var s = document.createElement("script");
+    s.src = "https://giscus.app/client.js";
+    s.async = true;
+    s.crossOrigin = "anonymous";
+    s.setAttribute("data-repo", "Batianxieshen1/blog");
+    s.setAttribute("data-repo-id", "R_kgDOUvGydw");
+    s.setAttribute("data-category", "General");
+    s.setAttribute("data-category-id", "DIC_kwDOUvGyd84DGj1s");
+    s.setAttribute("data-mapping", "pathname");
+    s.setAttribute("data-strict", "0");
+    s.setAttribute("data-reactions-enabled", "1");
+    s.setAttribute("data-emit-metadata", "0");
+    s.setAttribute("data-input-position", "top");
+    s.setAttribute("data-theme", document.documentElement.getAttribute("data-theme") === "dark" ? "noborder_dark" : "noborder_light");
+    s.setAttribute("data-lang", "zh-CN");
+    s.setAttribute("data-loading", "lazy");
+    mount.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
