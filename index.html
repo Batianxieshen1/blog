@@ -54,6 +54,14 @@
   --font-disp: "Space Grotesk", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
+  --font-code: "JetBrains Mono", "SF Mono", Consolas, "Courier New", monospace;
+  /* 反色层（页脚 / hover 墨底）：亮暗都不翻转，只换深浅 */
+  --invert-bg: #17160f;
+  --invert-ink: #f4f2ec;
+  --invert-muted: rgba(244, 242, 236, .55);
+  --invert-line: rgba(244, 242, 236, .18);
+  --hl-color: rgba(47, 95, 224, .16);
+  --card-hover: #ffffff;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -126,7 +134,7 @@ nav.hidden { transform: translateY(-100%); }
   font-size: clamp(25px, 3.2vw, 44px); line-height: 1.4; color: var(--ink);
 }
 .hero-title .hl {
-  background-image: linear-gradient(rgba(47, 95, 224, .16), rgba(47, 95, 224, .16));
+  background-image: linear-gradient(var(--hl-color), var(--hl-color));
   background-repeat: no-repeat;
   background-size: 100% 82%;
   background-position: 0 88%;
@@ -172,7 +180,7 @@ nav.hidden { transform: translateY(-100%); }
 .artifact.dash { right: 0; top: 0; transform: rotate(2deg); width: 236px; }
 .artifact.chat { left: 2%; bottom: 0; transform: rotate(1.5deg); width: 258px; z-index: 3; }
 .artifact.focus { right: 2%; bottom: 8%; transform: rotate(-1.8deg); width: 178px; text-align: center; }
-.artifact .code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
+.artifact .code { font-family: var(--font-code); font-size: 11.5px; color: var(--ink); }
 .artifact .code .c-dim { color: var(--muted); }
 .artifact .code .c-ok { color: #1c8a4c; }
 .artifact .bars { display: flex; align-items: flex-end; gap: 4px; height: 40px; margin: 8px 0 6px; }
@@ -190,7 +198,7 @@ nav.hidden { transform: translateY(-100%); }
 
 /* ============ 跑马灯 ============ */
 .marquee { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); margin-top: clamp(48px, 7vh, 88px); overflow: hidden; padding: 14px 0; background: var(--paper); }
-.marquee-track { display: flex; gap: 0; width: max-content; animation: slide 36s linear infinite; will-change: transform; }
+.marquee-track { display: flex; gap: 0; width: max-content; animation: slide 50s linear infinite; will-change: transform; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 .marquee-track span { font-family: var(--font-mono); font-size: 13px; letter-spacing: .18em; color: var(--ink-2); padding: 0 22px; white-space: nowrap; }
 .marquee-track em { font-style: normal; color: var(--accent); }
@@ -212,12 +220,19 @@ nav.hidden { transform: translateY(-100%); }
 .work-row .w-year { font-family: var(--font-mono); font-size: 13px; color: var(--muted); text-align: right; transition: color var(--dur-med) var(--ease); }
 .work-row .w-arrow { width: 36px; height: 36px; border: 1px solid var(--hairline); border-radius: 50%; display: grid; place-items: center; transition: all var(--dur-med) var(--ease); }
 .work-row .w-arrow svg { transition: transform var(--dur-med) var(--ease); }
-.work-row:hover { background: var(--ink); color: var(--paper); }
-.work-row:hover .w-idx, .work-row:hover .w-year { color: rgba(244, 242, 236, .55); }
-.work-row:hover .w-desc { color: rgba(244, 242, 236, .62); }
-.work-row:hover .w-tag { color: rgba(244, 242, 236, .8); border-color: rgba(244, 242, 236, .3); }
+.work-row:hover { background: var(--invert-bg); color: var(--invert-ink); }
+.work-row:hover .w-idx, .work-row:hover .w-year { color: var(--invert-muted); }
+.work-row:hover .w-desc { color: var(--invert-muted); }
+.work-row:hover .w-tag { color: var(--invert-ink); border-color: var(--invert-line); }
 .work-row:hover .w-flag { color: #9db4ff; border-color: rgba(157, 180, 255, .5); }
-.work-row:hover .w-arrow { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.work-row:hover .w-arrow { background: var(--invert-ink); border-color: var(--invert-ink); color: var(--invert-bg); }
+/* 暗色下不反转为浅底（会刺眼），改为绛夜抬升一档 */
+[data-theme="dark"] .work-row:hover { background: #1c1b16; color: var(--ink); }
+[data-theme="dark"] .work-row:hover .w-idx,
+[data-theme="dark"] .work-row:hover .w-year { color: var(--muted); }
+[data-theme="dark"] .work-row:hover .w-desc { color: var(--ink-2); }
+[data-theme="dark"] .work-row:hover .w-tag { color: var(--ink-2); border-color: var(--hairline); }
+[data-theme="dark"] .work-row:hover .w-arrow { background: var(--card); border-color: var(--hairline); color: var(--accent); }
 .work-row:hover .w-arrow svg { transform: translate(2px, -2px); }
 .works-more { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .1em; color: var(--ink-2); border-bottom: 1px solid var(--ink); padding-bottom: 4px; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
 .works-more:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
@@ -225,7 +240,7 @@ nav.hidden { transform: translateY(-100%); }
 /* ============ 数据 + 优势 ============ */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 18px; overflow: hidden; }
 .stat { background: var(--paper); padding: clamp(24px, 3vw, 40px) clamp(18px, 2vw, 32px); transition: background var(--dur-med) var(--ease); }
-.stat:hover { background: #fff; }
+.stat:hover { background: var(--card-hover); }
 .stat .num { font-family: var(--font-disp); font-weight: 700; font-size: clamp(34px, 4.6vw, 56px); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .stat .num small { font-size: .5em; font-weight: 500; color: var(--muted); margin-left: 2px; }
 .stat .cap { font-size: 13px; color: var(--muted); margin-top: 6px; }
@@ -260,27 +275,27 @@ nav.hidden { transform: translateY(-100%); }
 .tl-item p { font-size: 13px; color: var(--muted); }
 
 /* ============ 页脚（反色收尾） ============ */
-footer { margin-top: clamp(80px, 11vw, 150px); background: var(--ink); color: var(--paper); }
+footer { margin-top: clamp(80px, 11vw, 150px); background: var(--invert-bg); color: var(--invert-ink); }
 .foot-inner { padding: clamp(64px, 9vw, 120px) 0 clamp(28px, 3vw, 40px); }
-.foot-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .18em; color: rgba(244, 242, 236, .5); text-transform: uppercase; margin-bottom: 22px; }
+.foot-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .18em; color: var(--invert-muted); text-transform: uppercase; margin-bottom: 22px; }
 .foot-big { font-family: var(--font-disp); font-weight: 900; font-size: clamp(52px, 9.5vw, 132px); line-height: 1.04; letter-spacing: .005em; }
 .foot-big .accent { color: #8fa7ff; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: clamp(32px, 5vw, 56px); }
 .foot-link {
   display: inline-flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 500;
-  border: 1px solid rgba(244, 242, 236, .28); border-radius: 99px; padding: 12px 24px;
+  border: 1px solid var(--invert-line); border-radius: 99px; padding: 12px 24px;
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.foot-link:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); transform: translateY(-2px); }
-.foot-base { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: clamp(48px, 7vw, 88px); padding-top: 22px; border-top: 1px solid rgba(244, 242, 236, .16); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: rgba(244, 242, 236, .48); }
-.foot-base a { border-bottom: 1px solid rgba(244, 242, 236, .3); transition: color var(--dur-fast) var(--ease); }
-.foot-base a:hover { color: var(--paper); }
+.foot-link:hover { background: var(--invert-ink); color: var(--invert-bg); border-color: var(--invert-ink); transform: translateY(-2px); }
+.foot-base { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: clamp(48px, 7vw, 88px); padding-top: 22px; border-top: 1px solid var(--invert-line); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--invert-muted); }
+.foot-base a { border-bottom: 1px solid var(--invert-line); transition: color var(--dur-fast) var(--ease); }
+.foot-base a:hover { color: var(--invert-ink); }
 .ps-line {
-  margin-top: 22px; padding-top: 18px; border-top: 1px dashed rgba(244, 242, 236, .18);
-  font-size: 14px; color: rgba(244, 242, 236, .6);
+  margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--invert-line);
+  font-size: 14px; color: var(--invert-muted);
 }
-.ps-line a { color: rgba(244, 242, 236, .85); border-bottom: 1px dotted rgba(244, 242, 236, .4); text-decoration: none; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-.ps-line a:hover { color: var(--paper); border-color: var(--paper); }
+.ps-line a { color: var(--invert-ink); border-bottom: 1px dotted var(--invert-line); text-decoration: none; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.ps-line a:hover { color: var(--invert-ink); border-color: var(--invert-ink); }
 
 /* ============ 暗色模式 ============ */
 :root { --card: #fff; --nav-bg: rgba(244, 242, 236, .82); }
@@ -289,6 +304,12 @@ footer { margin-top: clamp(80px, 11vw, 150px); background: var(--ink); color: va
   --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80;
   --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
   --nav-bg: rgba(20, 19, 15, .8);
+  --invert-bg: #0c0b08;
+  --invert-ink: #ece9df;
+  --invert-muted: rgba(236, 233, 223, .55);
+  --invert-line: rgba(236, 233, 223, .14);
+  --hl-color: rgba(123, 147, 242, .28);
+  --card-hover: #22211b;
 }
 [data-theme="dark"] body::after { opacity: .05; }
 [data-theme="dark"] .marquee { background: var(--paper); }
@@ -386,6 +407,9 @@ footer { margin-top: clamp(80px, 11vw, 150px); background: var(--ink); color: va
 
 /* ============ 写作状态：已发布 ============ */
 .post-row .p-status.published { background: var(--accent-ink); color: var(--paper); border-color: var(--accent-ink); }
+/* 已阅邮戳：读过的信，盖上淡墨小章 */
+.post-row .p-status.read { background: transparent; color: var(--accent-ink); border: 1px dashed rgba(47, 95, 224, .45); transform: rotate(-2deg); }
+[data-theme="dark"] .post-row .p-status.read { border-color: rgba(157, 177, 245, .45); }
 .post-row { transition: background var(--dur-fast) var(--ease); }
 a.post-row { display: grid; }
 
@@ -465,6 +489,19 @@ a.post-row { display: grid; }
 }
 .sec-intro .accent-dot { color: var(--accent); }
 
+/* ============ 杂项打磨 ============ */
+/* 锚点跳转不被固定导航盖住 */
+[id] { scroll-margin-top: 76px; }
+/* 暗色下卡片与深底之间加一层环境光边 */
+[data-theme="dark"] .artifact,
+[data-theme="dark"] #work-preview .pv,
+[data-theme="dark"] .hero-mini { border-color: rgba(157, 177, 245, .22); box-shadow: 0 18px 44px rgba(0, 0, 0, .38); }
+/* 回访问候：印章轻点一下（360ms，一次性；仅 JS 添加） */
+@keyframes sealNod { 0% { transform: rotate(-4deg); } 45% { transform: rotate(1.5deg); } 100% { transform: rotate(-4deg); } }
+.seal-nod { animation: sealNod 360ms var(--ease) .4s 1; }
+/* 手机端首屏迷你产物卡：桌面隐藏，<=720px 静态呈现（无动画） */
+.hero-mini { display: none; }
+
 /* ============ 响应式 ============ */
 @media (max-width: 1024px) {
   .hero-grid { grid-template-columns: 1fr; }
@@ -476,6 +513,18 @@ a.post-row { display: grid; }
   .nav-links { display: none; }
   .hero-visual { display: none; }
   .hero { min-height: 80svh; }
+  .hero-mini {
+    display: block; margin-top: 30px; max-width: 252px;
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(23, 22, 15, .10);
+    padding: 12px 14px; font-size: 12px; line-height: 1.6; color: var(--ink-2);
+    transform: rotate(-1.5deg);
+  }
+  .hero-mini .a-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .hero-mini .a-title i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .hero-mini .code { font-family: var(--font-code); font-size: 11.5px; color: var(--ink); }
+  .hero-mini .code .c-dim { color: var(--muted); }
+  .hero-mini .code .c-ok { color: #1c8a4c; }
   .work-row { grid-template-columns: 44px 1fr 40px; }
   .work-row .w-tag, .work-row .w-year { display: none; }
   .work-row .w-desc { grid-column: 2 / 3; }
@@ -524,7 +573,7 @@ a.post-row { display: grid; }
 <header class="hero" id="top">
   <div class="wrap hero-grid">
     <div class="hero-left">
-      <div class="hero-eyebrow rv in">这是一封公开的信<span class="seal" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 64 64"><rect class="seal-bg" x="2" y="2" width="60" height="60" rx="10" fill="#2f5fe0"/><rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#f4f2ec" stroke-opacity=".55" stroke-width="1.5"/><text x="32" y="30" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">蓝</text><text x="32" y="51" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">纸</text></svg></span></div>
+      <div class="hero-eyebrow rv in">这是一封公开的信<span class="seal" id="hero-seal" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 64 64"><rect class="seal-bg" x="2" y="2" width="60" height="60" rx="10" fill="#2f5fe0"/><rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#f4f2ec" stroke-opacity=".55" stroke-width="1.5"/><text x="32" y="30" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">蓝</text><text x="32" y="51" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">纸</text></svg></span></div>
       <h1 class="hero-title"><span class="reveal-mask">把大模型装进<span class="hl">真实工作流</span>，<br>把思考写成文章。</span></h1>
       <p class="hero-sub rv in" style="transition-delay:.4s">
         白天做产品与数据，夜里把过程写成文字 ——
@@ -535,7 +584,11 @@ a.post-row { display: grid; }
         <a class="btn btn-primary" href="#works">从造物开始 ↓</a>
         <a class="btn btn-ghost" href="#contact">见字如面 →</a>
       </div>
-      <div class="hero-meta rv in" style="transition-delay:.7s">写于 2026 年秋 · 广州 · 纸面与代码之间</div>
+      <div class="hero-meta rv in" style="transition-delay:.7s"><span id="hero-date">写于 2026 年秋</span> · 广州 · 纸面与代码之间<span id="visit-note"></span></div>
+      <div class="hero-mini" aria-hidden="true">
+        <div class="a-title"><i></i>OpenJob · Terminal</div>
+        <div class="code">$ openjob collect --daily<br><span class="c-dim">→ 采集 47 · 去重后 12</span><br><span class="c-ok">✓ AI 评分完成，待确认</span></div>
+      </div>
     </div>
 
     <div class="hero-visual" id="artifacts">
@@ -666,18 +719,18 @@ a.post-row { display: grid; }
       <div class="sec-label rv"><span class="idx">03</span><b>札记</b><span>NOTES — 2 篇已发布，持续更新</span></div>
       <p class="sec-intro rv">把踩过的坑<span class="accent-dot">，</span>写成后来人的路标。</p>
       <div>
-        <a class="post-row rv" href="posts/three-levels.html">
+        <a class="post-row rv" href="posts/three-levels.html" data-post="001">
           <span class="p-date">2026 · 09</span>
           <span class="p-title">大模型应用的三个层次：工具 → 工作流 → 决策</span>
           <span class="p-status published">已发布</span>
         </a>
-        <a class="post-row rv" href="posts/openjob-retro.html">
+        <a class="post-row rv" href="posts/openjob-retro.html" data-post="002">
           <span class="p-date">2026 · 09</span>
           <span class="p-title">OpenJob 复盘：把求职串成一条可审阅的流水线</span>
           <span class="p-status published">已发布</span>
         </a>
         <!-- 有个人公众号后可在此加行：<a class="post-row" href="公众号链接">…<span class="p-status">公众号同步</span></a> -->
-        <a class="post-row rv" href="posts/config-driven.html">
+        <a class="post-row rv" href="posts/config-driven.html" data-post="003">
           <span class="p-date">2026 · 09</span>
           <span class="p-title">配置驱动思维：换数据集不用改代码的数据分析框架</span>
           <span class="p-status published">已发布</span>
@@ -742,12 +795,12 @@ a.post-row { display: grid; }
     <div class="foot-label rv">05 — 信箱 · CORRESPONDENCE · 欢迎合作、问询与闲聊</div>
     <div class="foot-big rv">见字如面<span class="accent">。</span><span class="seal" aria-hidden="true" style="margin-left:18px"><svg width="62" height="62" viewBox="0 0 64 64"><rect class="seal-bg" x="2" y="2" width="60" height="60" rx="10" fill="#2f5fe0"/><rect x="9" y="9" width="46" height="46" rx="6" fill="none" stroke="#f4f2ec" stroke-opacity=".55" stroke-width="1.5"/><text x="32" y="30" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">蓝</text><text x="32" y="51" font-size="20" font-family="'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-weight="700" fill="#f4f2ec" text-anchor="middle">纸</text></svg></span></div>
     <div class="foot-links rv">
-      <a class="foot-link" href="mailto:13676097998@163.com">✉ 邮箱 13676097998@163.com</a>
+      <a class="foot-link" href="mailto:13676097998@163.com?subject=%E3%80%90%E5%9B%9E%E4%BF%A1%E3%80%91%E5%85%B3%E4%BA%8E%E3%80%8A%E8%93%9D%E7%BA%B8%E3%80%8B%E7%9A%84%E9%98%85%E8%AF%BB%E4%B8%8E%E4%BA%A4%E6%B5%81&body=%E8%93%9D%E7%BA%B8%EF%BC%8C%E8%A7%81%E5%AD%97%E5%A6%82%E9%9D%A2%EF%BC%9A%0D%0A%0D%0A%E6%88%91%E5%9C%A8%E4%BD%A0%E7%9A%84%E5%8D%9A%E5%AE%A2%E4%B8%8A%E7%9C%8B%E5%88%B0%E4%BA%86%EF%BC%9A%0D%0A%E6%88%91%E7%9A%84%E6%83%B3%E6%B3%95%E6%98%AF%EF%BC%9A">✉ 邮箱 13676097998@163.com</a>
       <a class="foot-link" href="https://github.com/Batianxieshen1" target="_blank" rel="noopener">⌥ GitHub @Batianxieshen1</a>
       <a class="foot-link" href="javascript:void(0)" id="wechat-copy" title="点击复制微信号">◎ 微信 lqt1010dsb</a>
     </div>
     <div class="foot-base">
-      <span>写于 2026 年秋 · 广州 —— © 2026 蓝纸 · BLUE PAPER</span>
+      <span><span id="foot-date">写于 2026 年秋</span> · 广州 —— © 2026 蓝纸 · BLUE PAPER</span>
       <span id="busuanzi_container_site_pv" style="display:none">本页被看过 <b id="busuanzi_value_site_pv"></b> 次 · </span>
       <span>本页由 AI 辅助构建 · <a href="#top">人工复核后发布</a> ↑</span>
     </div>
@@ -900,6 +953,56 @@ a.post-row { display: grid; }
       if (navigator.clipboard) navigator.clipboard.writeText("lqt1010dsb").then(done).catch(function () {});
     });
   }
+
+  /* ---------- 已阅邮戳：读完的信，在主页盖上「已阅」小章（只对读者自己的浏览器生效） ---------- */
+  document.querySelectorAll(".post-row[data-post]").forEach(function (row) {
+    var read = false;
+    try { read = localStorage.getItem("lz-read-" + row.dataset.post) === "1"; } catch (e) {}
+    if (read) {
+      var st = row.querySelector(".p-status");
+      if (st) { st.textContent = "已阅 · 第 " + row.dataset.post + " 封"; st.classList.add("read"); }
+    }
+  });
+
+  /* ---------- 节气信头：日期随真实时间生长（常数表适用 2024–2033，其余年份保留季节写法） ---------- */
+  var TERMS = [[5.4055, "小寒"], [20.12, "大寒"], [3.87, "立春"], [18.73, "雨水"], [5.63, "惊蛰"], [20.646, "春分"], [4.81, "清明"], [20.1, "谷雨"], [5.52, "立夏"], [21.04, "小满"], [5.678, "芒种"], [21.37, "夏至"], [7.108, "小暑"], [22.83, "大暑"], [7.5, "立秋"], [23.13, "处暑"], [7.646, "白露"], [23.042, "秋分"], [8.318, "寒露"], [23.438, "霜降"], [7.438, "立冬"], [22.36, "小雪"], [7.18, "大雪"], [21.94, "冬至"]];
+  function solarTermName(d) {
+    var y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    if (y < 2024 || y > 2033) return null;
+    var yy = y % 100;
+    function termDay(idx) {
+      var mm = Math.floor(idx / 2) + 1;
+      var l = (mm === 1 || mm === 2) ? Math.floor((yy - 1) / 4) : Math.floor(yy / 4);
+      return Math.floor(yy * 0.2422 + TERMS[idx][0]) - l;
+    }
+    var i1 = (m - 1) * 2, idx;
+    if (day < termDay(i1)) idx = (i1 - 1 + 24) % 24;
+    else if (day < termDay(i1 + 1)) idx = i1;
+    else idx = i1 + 1;
+    return TERMS[idx][1];
+  }
+  (function () {
+    var name = solarTermName(new Date());
+    if (!name) return;
+    var y = new Date().getFullYear();
+    ["hero-date", "foot-date"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = "写于 " + y + " 年" + name;
+    });
+  })();
+
+  /* ---------- 回访问候：印章轻点 + 第 N 次展信（首访不显示；计数每会话一次，减弱动效免打扰） ---------- */
+  try {
+    var visits = parseInt(localStorage.getItem("lz-visits") || "0", 10);
+    var counted = sessionStorage.getItem("lz-counted");
+    if (!counted) { visits += 1; localStorage.setItem("lz-visits", String(visits)); sessionStorage.setItem("lz-counted", "1"); }
+    if (visits > 1 && !reduce) {
+      var sealEl = document.getElementById("hero-seal");
+      if (sealEl) sealEl.classList.add("seal-nod");
+      var noteEl = document.getElementById("visit-note");
+      if (noteEl) noteEl.textContent = " · 第 " + visits + " 次展信";
+    }
+  } catch (e) {}
 
   /* ---------- 主题切换 ---------- */
   var tt = document.getElementById("theme-toggle");

@@ -55,6 +55,15 @@ nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shado
 .logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .back { font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-decoration: none; color: var(--ink-2); transition: color var(--dur-fast) var(--ease); }
 .back:hover { color: var(--accent-ink); }
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--hairline);
+  display: grid; place-items: center; cursor: pointer; background: transparent; color: var(--ink);
+  transition: border-color 160ms var(--ease), transform 160ms var(--ease);
+}
+.theme-toggle:hover { border-color: var(--ink); transform: translateY(-1px); }
+[data-theme="dark"] .icon-moon { display: none; }
+[data-theme="dark"] .icon-sun { display: block; }
+.icon-sun { display: none; }
 
 header.post-head { padding: 140px 0 0; }
 .post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
@@ -109,7 +118,13 @@ footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var
 <nav id="nav">
   <div class="wrap nav-inner">
     <a class="logo" href="../index.html"><span class="dot"></span>蓝纸</a>
-    <a class="back" href="../index.html#writing">← 回主页 · 札记</a>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a class="back" href="../index.html#writing">← 回主页 · 札记</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
   </div>
 </nav>
 
@@ -217,6 +232,39 @@ run_analysis.py        ← 通用引擎：读配置执行
     s.setAttribute("data-lang", "zh-CN");
     s.setAttribute("data-loading", "lazy");
     mount.appendChild(s);
+  }
+
+  /* ---------- 主题切换（同步 meta 与 giscus 评论区） ---------- */
+  var tt = document.getElementById("theme-toggle");
+  if (tt) {
+    tt.addEventListener("click", function () {
+      var root = document.documentElement;
+      var dark = root.getAttribute("data-theme") === "dark";
+      if (dark) root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", "dark");
+      try { localStorage.setItem("theme", dark ? "light" : "dark"); } catch (e) {}
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", dark ? "#f4f2ec" : "#14130f");
+      var frame = document.querySelector("iframe.giscus-frame");
+      if (frame) frame.contentWindow.postMessage({ giscus: { setConfig: { theme: dark ? "noborder_light" : "noborder_dark" } } }, "https://giscus.app");
+    });
+  }
+
+  /* ---------- 读到文末盖「已阅」小章（主页札记行会点亮） ---------- */
+  var readKey = "lz-read-003";
+  var marked = false;
+  try { marked = localStorage.getItem(readKey) === "1"; } catch (e) {}
+  function markRead() {
+    if (marked) return;
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80) {
+      marked = true;
+      try { localStorage.setItem(readKey, "1"); } catch (e) {}
+      window.removeEventListener("scroll", markRead);
+    }
+  }
+  if (!marked) {
+    window.addEventListener("scroll", markRead, { passive: true });
+    markRead();
   }
 })();
 </script>
