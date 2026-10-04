@@ -416,6 +416,10 @@ a.post-row { display: grid; }
 /* ============ 作品行：线上入口 + GitHub 动态 ============ */
 .work-row { cursor: pointer; }
 .w-main { color: inherit; }
+/* 键盘无障碍：主链接用伪元素铺满整行（行本身 position:relative），
+   "线上体验"副链接浮在上层保持独立点击；去掉 div[role=link] 嵌套链接的语义混乱 */
+.work-row .w-main::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.work-row .w-live { position: relative; z-index: 2; }
 .w-live {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
   color: var(--accent-ink); border: 1px solid rgba(47, 95, 224, .4);
@@ -638,7 +642,7 @@ a.post-row { display: grid; }
           <span class="w-desc">本地优先的 AI 求职工作台：岗位采集 → AI 五维评分 → JD 定向简历 → 人工确认投递 → 回复监测。是否投递永远由人按下放行键。</span>
           <span class="w-result">求职 5 个环节串成一条可审阅流水线 · 全程本地数据</span>
         </a>
-        <div class="work-row rv" tabindex="0" role="link" aria-label="在 GitHub 查看电商用户增长分析框架" data-href="https://github.com/Batianxieshen1/ecommerce-growth-analysis" data-preview="ecommerce">
+        <div class="work-row rv" data-preview="ecommerce">
           <span class="w-idx">02</span>
           <span class="w-name"><a class="w-main" href="https://github.com/Batianxieshen1/ecommerce-growth-analysis" target="_blank" rel="noopener">电商用户增长分析框架</a> <a class="w-live" href="https://batianxieshen1.github.io/ecommerce-growth-analysis/" target="_blank" rel="noopener">线上体验 ↗</a></span>
           <span class="w-tag">PANDAS · NEXT.JS</span>
@@ -647,7 +651,7 @@ a.post-row { display: grid; }
           <span class="w-desc">配置驱动的通用分析引擎：RFM、转化漏斗、留存 Cohort 全部抽离为 JSON 规则，换数据集不改一行代码。</span>
           <span class="w-result">Olist 9.8 万笔订单 · ¥2,000w GMV 端到端验证 · 看板上线 Vercel</span>
         </div>
-        <div class="work-row rv" tabindex="0" role="link" aria-label="在 GitHub 查看 Focus Room" data-href="https://github.com/Batianxieshen1/focus-room" data-preview="focus">
+        <div class="work-row rv" data-preview="focus">
           <span class="w-idx">03</span>
           <span class="w-name"><a class="w-main" href="https://github.com/Batianxieshen1/focus-room" target="_blank" rel="noopener">Focus Room</a> <a class="w-live" href="https://batianxieshen1.github.io/focus-room/" target="_blank" rel="noopener">线上体验 ↗</a></span>
           <span class="w-tag">NEXT.JS · PWA</span>
@@ -656,7 +660,7 @@ a.post-row { display: grid; }
           <span class="w-desc">沉浸式专注 Web 应用：番茄钟、视频背景、声音混音、学习热力图。从需求定义到部署上线全流程独立完成。</span>
           <span class="w-result">43 次迭代提交 · PWA 可安装 · 中英双语</span>
         </div>
-        <div class="work-row rv" tabindex="0" role="link" aria-label="在 GitHub 查看朝夕订阅每日成本" data-href="https://github.com/Batianxieshen1/zhaxi-sub" data-preview="zhaxi">
+        <div class="work-row rv" data-preview="zhaxi">
           <span class="w-idx">04</span>
           <span class="w-name"><a class="w-main" href="https://github.com/Batianxieshen1/zhaxi-sub" target="_blank" rel="noopener">朝夕 · 订阅每日成本</a> <a class="w-live" href="https://zhaxi-sub.vercel.app" target="_blank" rel="noopener">线上体验 ↗</a></span>
           <span class="w-tag">PWA · 可部署</span>
@@ -1064,17 +1068,6 @@ a.post-row { display: grid; }
       heroVisual.style.translate = "0 " + (y * 0.1) + "px";
     }
   }, { passive: true });
-
-  /* ---------- 作品行：整行点击跳 GitHub（div 结构行） ---------- */
-  document.querySelectorAll(".work-row[data-href]").forEach(function (row) {
-    row.addEventListener("click", function (e) {
-      if (e.target.closest("a")) return; /* 站内链接（如"线上体验"）自行处理 */
-      window.open(row.dataset.href, "_blank", "noopener");
-    });
-    row.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && !e.target.closest("a")) window.open(row.dataset.href, "_blank", "noopener");
-    });
-  });
 
   /* ---------- GitHub 最近动态（失败静默隐藏） ---------- */
   var ghBox = document.getElementById("gh-activity");

@@ -64,6 +64,7 @@ nav.scrolled { background: var(--nav-bg); backdrop-filter: blur(14px); box-shado
 [data-theme="dark"] .icon-moon { display: none; }
 [data-theme="dark"] .icon-sun { display: block; }
 .icon-sun { display: none; }
+#progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--accent); z-index: 200; pointer-events: none; }
 
 header.post-head { padding: 140px 0 0; }
 .post-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; }
@@ -105,6 +106,7 @@ footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var
 </style>
 </head>
 <body>
+<div id="progress" aria-hidden="true"></div>
 <nav id="nav">
   <div class="wrap nav-inner">
     <a class="logo" href="../index.html"><span class="dot"></span>蓝纸</a>
@@ -196,6 +198,13 @@ footer.post-foot { margin-top: clamp(56px, 8vw, 96px); border-top: 1px solid var
   var nav = document.getElementById("nav");
   window.addEventListener("scroll", function () {
     nav.classList.toggle("scrolled", window.scrollY > 24);
+  }, { passive: true });
+
+  /* ---------- 阅读进度条 ---------- */
+  var bar = document.getElementById("progress");
+  window.addEventListener("scroll", function () {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    if (bar) bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + "%";
   }, { passive: true });
 
   /* giscus 评论区：主题跟随站点 */
