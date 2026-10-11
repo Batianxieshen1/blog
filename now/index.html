@@ -22,6 +22,14 @@
   } catch (e) {}
 })();
 </script>
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+  } catch (e) {}
+})();
+</script>
 <link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -33,10 +41,10 @@
   --font-mono: "Space Grotesk", "JetBrains Mono", Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5; }
+  :root:not([data-theme="light"]) { --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5; }
 }
 [data-theme="dark"] {
-  --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
+  --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -58,6 +66,10 @@ h1 .accent { color: var(--accent-ink); }
 .note { margin-top: 30px; font-size: 13.5px; color: var(--muted); border-left: 3px solid var(--hairline); padding-left: 16px; }
 .foot { margin-top: 40px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .1em; color: var(--muted); }
 .foot a { color: inherit; border-bottom: 1px solid var(--hairline); }
+
+/* 手动主题覆盖（跟随主页的切换记忆；系统偏好作为 fallback） */
+[data-theme="dark"] { --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5; }
+[data-theme="light"] { --paper: #f4f2ec; --paper-2: #ece9e0; --ink: #17160f; --ink-2: #43413a; --muted: #77746a; --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8; }
 </style>
 </head>
 <body>

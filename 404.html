@@ -16,6 +16,14 @@
   } catch (e) {}
 })();
 </script>
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+  } catch (e) {}
+})();
+</script>
 <link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -24,10 +32,10 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --paper: #14130f; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent-ink: #9db1f5; }
+  :root:not([data-theme="light"]) { --paper: #14130f; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent-ink: #9db1f5; }
 }
 [data-theme="dark"] {
-  --paper: #14130f; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #8f8c80; --hairline: #2e2d26; --accent-ink: #9db1f5;
+  --paper: #14130f; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent-ink: #9db1f5;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -50,6 +58,10 @@ a.btn {
 }
 a.btn:hover { transform: translateY(-2px); }
 .hint { margin-top: 26px; font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+
+/* 手动主题覆盖（跟随主页的切换记忆；系统偏好作为 fallback） */
+[data-theme="dark"] { --paper: #14130f; --paper-2: #1c1b16; --ink: #ece9df; --ink-2: #c8c5b9; --muted: #9c998d; --hairline: #2e2d26; --accent: #7b93f2; --accent-ink: #9db1f5; }
+[data-theme="light"] { --paper: #f4f2ec; --paper-2: #ece9e0; --ink: #17160f; --ink-2: #43413a; --muted: #77746a; --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8; }
 </style>
 </head>
 <body>
