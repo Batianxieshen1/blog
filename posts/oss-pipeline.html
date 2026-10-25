@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>两周合了 14 个 PR：我不是在刷格子，是在建一条流水线 — 蓝纸</title>
+<meta name="description" content="向 etcd、字节 deer-flow、阿里 FunASR 等 6 家企业/组织的高星项目提交 22 个 PR、合并 14 个——怎么选仓库、怎么避坑、踩了三次的 DCO。">
+<meta name="theme-color" content="#f4f2ec">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317160f'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%232f5fe0'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%232f5fe0' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  } catch (e) {}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link href="https://fonts.loli.net/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+@view-transition { navigation: auto; }
+:root {
+  --paper: #f4f2ec; --paper-2: #ece9e0; --card: #fff;
+  --ink: #17160f; --ink-2: #43413a; --muted: #77746a;
+  --hairline: #dcd8cb; --accent: #2f5fe0; --accent-ink: #2449b8;
+  --nav-bg: rgba(244, 242, 236, .82);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 160ms; --dur-med: 280ms;
+}
+[data-theme="dark"] {
+  --paper: #14130f; --paper-2: #1c1a15; --card: #1e1c16;
+  --ink: #e8e5da; --ink-2: #b8b4a6; --muted: #7a766a;
+  --hairline: #33302a; --accent: #6b9fff; --accent-ink: #8ab4ff;
+  --nav-bg: rgba(20, 19, 15, .85);
+}
+</style>
+<link rel="stylesheet" href="posts/style.css">
+<style>
+/* 以下为该文章专属样式（继承自 config-driven 的文章级 CSS） */
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="../index.html"><span class="dot"></span>蓝纸</a>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a class="back" href="../index.html#writing">← 回主页 · 写作区</a>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.8 6.8 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="post-head">
+  <div class="wrap">
+    <div class="post-meta">
+      <span class="stamp">第 004 封</span>
+      <span>2026 · 10 · 25</span>
+      <span>约 12 分钟</span>
+      <span>开源 · 方法论</span>
+    </div>
+    <h1 class="post-title">两周合了 14 个 PR：<br>我不是在刷格子，是在建一条流水线</h1>
+    <p class="post-sub">找 AI 产品方向的实习，需要能拿出来的公开证据。我选了开源贡献这条路，两周合了 14 个 PR，覆盖字节跳动、阿里巴巴、蚂蚁集团、CNCF、Grafana Labs。这篇不讲我有多努力，讲我怎么选仓库、怎么避开那些看起来很美实际进不去的坑，以及踩了三次的 DCO。</p>
+    <hr class="post-rule">
+  </div>
+</header>
+
+<div class="wrap">
+  <article>
+    <p>找实习的人很多。简历上写「熟练使用 Python/SQL」，写「做过电商增长分析」的人也很多。但简历上写着「向 CNCF 顶级项目 etcd 提交了 Go 安全升级，已被合并」的人不多。</p>
+    <p>这不是 LeetCode 能替代的。LeetCode 证明你能在隔离环境里写算法；开源证明你<b>读懂了别人的代码、找到了问题、按项目的规范改了、让维护者认可了</b>。这四步里每一步都比写算法难，而且全有据可查——PR 就在那里，谁都能看到。</p>
+    <p>我给自己定的规则：<b>不交没验证过的改动</b>。每个 PR 都先在本机复现问题、写回归测试、跑通之后再提交。这条规则让我多花了很多时间，但也让我避开了「提了但被维护者打回」的最坏结果。</p>
+
+    <h2><span class="no">01</span>不要急着找 issue，先选对仓库</h2>
+    <p><b>90% 的 PR 被拒不是质量问题，是选错了仓库。</b></p>
+    <p>我最初的直觉是找星标最高的项目，后来发现这个方向完全是错的。星标高只说明项目火，不代表它收外部人的 PR。</p>
+    <p>我写了一套筛选流程，用 GitHub GraphQL API 扫了 96 个仓库：</p>
+    <ul>
+      <li>拉取每个仓库近 90 天的合并记录</li>
+      <li>剔除机器人和仓库成员，只统计<b>独立外部贡献者</b>的数量和合并速度</li>
+      <li>按两个指标排序：独立作者数 × 中位合并时间</li>
+      <li>逐个读 LICENSE 原文核实许可证</li>
+    </ul>
+    <p>这个流程给我两个关键指标：<b>独立作者数</b>和<b>中位合并时间</b>。前者反映社区厚度，后者反映维护者响应速度。</p>
+
+    <h3>数据陷阱</h3>
+    <p>serverless/serverless 是一个 47k 星的项目，中位合并只要 2 小时，看起来非常好。但我拆开看发现：90 天内合并的 50 个外部 PR 里，<b>没有一个是首次贡献者</b>——全是老面孔。它的「快」是给内部人的快，你提了也不会有人看。</p>
+    <p>还有更极端的：PaddleOCR 和 MinerU 近 90 天分别收了 23 个和 56 个外部 PR，<b>合并数为零</b>。连 typo 修复都不收。这两个仓库的 issue 列表看起来很热闹，但那是幻觉。</p>
+
+    <h3>伪开源</h3>
+    <p>GitHub 的许可证标签会骗人。我把 96 个仓库的 LICENSE 原文全部读了一遍，发现 4 个看起来开源但实际不是的：</p>
+    <ul>
+      <li><b>n8n</b>（208k★）：Sustainable Use License，只能「内部业务或非商业个人使用」</li>
+      <li><b>serverless/serverless</b>（47k★）：LICENSE 文件内容是一个商业客户协议 PDF 的链接</li>
+      <li><b>XiaoMi/ha_xiaomi_home</b>（22k★）：小米自定义许可，原文写明「仅限于非商业性目的使用」</li>
+      <li><b>lobehub/lobehub</b>（83k★）：LobeHub Community License，衍生作品需商业许可</li>
+    </ul>
+    <p>这些项目你能在 GitHub 上提 PR，但它们不满足 OSI 的开源定义。<b>我全部剔除了。</b></p>
+
+    <h2><span class="no">02</span>选 issue 比写代码更花时间</h2>
+    <p>仓库选对之后，下一步是在里面找一个能动手的 issue。我用了三种策略：</p>
+
+    <h3>策略一：修主分支 CI 红灯（最稳）</h3>
+    <p>主分支的 CI 如果红了，说明有一个确定的问题等着被修。而且这种机会几乎没有竞争——大家都在盯着 issue 列表抢，但 CI 红灯不在 issue 列表里。</p>
+    <p>deer-flow（字节跳动 84k★）就是这么做的。我发现它的 <code>Unit Tests</code> 在 main 上红了，追查发现是 cargo 冷编译超时——沙箱里写死了 60 秒，但一个 loaded runner 的工具链启动加编译就超过了。我改成 180 秒，提交后 10 小时被合并。</p>
+    <p><b>方法有效性的关键</b>：bug issue 当天就会被社区里的人抢走，但 CI 红灯挂了几个小时都没人管。</p>
+
+    <h3>策略二：版本升级（最可复制）</h3>
+    <p>etcd（CNCF 52k★）的 issue #22628 要把 Go 从 1.27.2 升到 1.27.3（修 CVE），涉及主仓库加 6 个子仓库的多个分支。我做了主仓库的 4 个分支，后来又补了 6 个子仓库的 11 个分支，一共 <b>17 个 PR</b>。这类改动的核心就是版本号替换，风险低、review 快——全部被合并了。</p>
+
+    <h3>策略三：抢新鲜 bug（需要快）</h3>
+    <p>字节 deer-flow 的 bug issue 出现当天就有 PR，等于在赛跑。ant-design 的 4 个新鲜 a11y bug 挂了两天也没人碰，但全部标着 <code>unconfirmed</code>——维护者还没确认，你修了可能白修。</p>
+    <p><b>我学到的是</b>：新鲜但未被确认的 issue ≠ 好机会。要看这个仓库的 review 速度有多快，以及维护者是不是已经在处理了。</p>
+
+    <h2><span class="no">03</span>不交没验证过的改动</h2>
+    <p>每个 PR 走这个流程：</p>
+    <ol>
+      <li><b>在本机复现问题</b>。不是看 issue 描述就动手，是让 bug 在你自己的机器上跑出来。有时候 issue 描述是对的但代码已经变了，有时描述本身就是错的。</li>
+      <li><b>写回归测试</b>。先确认测试在修复前失败（红了），修复后通过（绿了）。如果写不出红绿，说明你还没理解问题。</li>
+      <li><b>修复 + 跑通所有已有测试</b>。确保没有引入新的回归。</li>
+      <li><b>用真实的工具做基准</b>。比如我在修 grafana 的 <code>.gitignore</code> 处理时，不是照 spec 写代码，而是建了一个临时 git 仓库跑 <code>git check-ignore</code> 来拿真实的基准。</li>
+    </ol>
+    <p>这个流程让我在多个 PR 里避免了「修好了但引入了新 bug」的情况。比如 FunASR 那个 PR，我改了一行（<code>int16</code> → <code>int32</code>），然后跑了 3000 组随机输入的对比，证明正常范围的行为逐位不变。</p>
+
+    <h2><span class="no">04</span>踩过的坑（这是文章最核心的部分）</h2>
+
+    <h3>1. DCO 三连踩</h3>
+    <p>etcd 要求每个 commit 带 <code>Signed-off-by</code>。我因为用 GitHub API 直接建 commit（不走 git），连续踩了三次：</p>
+    <ul>
+      <li>第一次：忘了加 <code>Signed-off-by</code> 行</li>
+      <li>第二次：加了，但 <code>author</code> 的邮箱是 QQ 邮箱，<code>Signed-off-by</code> 用的是 GitHub noreply 地址。DCO 要求两者一致，所以还是 fail</li>
+      <li>第三次：换了脚本又忘了加</li>
+    </ul>
+    <p><b>教训</b>：用 API 建 commit 时，signoff 行必须写在 message 模板里，不能建完再补。author 和 committer 的邮箱也必须显式指定为同一个地址。</p>
+
+    <h3>2. 时区陷阱</h3>
+    <p>我的测试在本地永远通过，CI 永远失败。追了两天才发现：测试夹具里写死了 <code>-8 hours</code>（我的时区 UTC+8），CI runner 是 UTC，算出来的日期差了一天。</p>
+    <p>修复方法是改用 SQLite 的 <code>'utc'</code> 修饰符，替代硬编码的时区偏移。验证方法是 <code>TZ=UTC</code> 前缀跑全量测试——如果你不知道这个方法，可以在自己的 Windows 机器上模拟 CI 的时区。</p>
+
+    <h3>3. Git Bash 路径转换</h3>
+    <p>我用 Git Bash 在 PR 下评论了 <code>/retest</code>，结果发出去的内容是 <code>C:/Program Files/Git/retest</code>。Git Bash 会把以 <code>/</code> 开头的字符串当成路径，自动加上 Git 安装目录前缀。</p>
+    <p>修复方法是 <code>--body-file</code> 从文件读内容，绕过路径转换。这个坑让我的一条 PR 重跑命令静默失败了好几个小时。</p>
+
+    <h3>4. <code>gh api -f</code> 会把数组转成字符串</h3>
+    <p>用 GitHub API 的 Tree API 时，<code>tree</code> 和 <code>parents</code> 字段需要传数组。但 <code>gh api -f</code> 会把它们序列化成 JSON 字符串，GitHub 返回 422 Invalid request。</p>
+    <p>修复是用 <code>--input</code> 从 JSON 文件传完整 payload，而不是用 <code>-f</code> 逐个传参数。</p>
+
+    <h2><span class="no">05</span>结果</h2>
+    <p>两周内提交了 <b>22 个 PR</b>，已合并 <b>14 个</b>，覆盖 <b>6 家企业/组织</b>：</p>
+    <table>
+      <thead><tr><th>指标</th><th>数字</th></tr></thead>
+      <tbody>
+        <tr><td>已合并</td><td>14</td></tr>
+        <tr><td>在审</td><td>8</td></tr>
+        <tr><td>覆盖仓库</td><td>etcd、raft、gofail、auger、etcd-operator、protodoc、bbolt（CNCF）；deer-flow（字节）；FunASR（阿里）；ant-design-mobile（蚂蚁）；grafana（Grafana Labs）</td></tr>
+        <tr><td>最大项目</td><td>deer-flow 84k★、grafana 77k★、etcd 52k★</td></tr>
+        <tr><td>平均提交→合并</td><td>&lt; 48 小时</td></tr>
+      </tbody>
+    </table>
+    <p>每个 PR 都不是刷出来的：涉及 React 竞态条件、NumPy 溢出、键盘无障碍、CI 稳定性、SQL 日期处理等真实 bug 修复。</p>
+
+    <h2><span class="no">06</span>给想开始的人的建议</h2>
+    <ul>
+      <li><b>不要从 Linux Kernel 或 Kubernetes 开始。</b>太大了，review 周期以月计。</li>
+      <li><b>先扫再选。</b>用数据找「合并快 + 收个人 + 真开源」的交集。星标数不是指标——serverless 47k 星你进了也白进。</li>
+      <li><b>小 PR 大价值。</b>一个带回归测试的 bug 修复 &gt; 十个 typo 修复。前者证明你理解了问题并且能写测试，后者只证明你会打字。</li>
+      <li><b>方法论比数量重要。</b>能讲清楚「为什么选这个仓库、这个问题」比「我提了 100 个 PR」更有说服力。面试时被问到「最近在做什么」，你要能从「我怎么筛仓库」讲到「我怎么复现 bug」再到「我怎么验证修复没有引入新问题」——这条线讲下来，面试官看到的不只是代码，是你的工程思维。</li>
+    </ul>
+    <p class="article-cred">所有 PR 都公开在我的 GitHub 主页上（<a href="https://github.com/Batianxieshen1" target="_blank" rel="noopener">@Batianxieshen1</a>）。数据和分析文件在本地 agent 仓库的 oss-targets 目录里。</p>
+  </article>
+
+  <section class="comments" aria-label="留言与讨论">
+    <hr class="post-rule">
+    <h2 class="c-title">留言与讨论</h2>
+    <div id="giscus-mount"></div>
+    <noscript><p class="c-fallback">留言功能需要 JavaScript，也可以直接 <a href="https://github.com/Batianxieshen1/blog/discussions" target="_blank" rel="noopener">去 GitHub 讨论区</a>。</p></noscript>
+  </section>
+</div>
+
+<footer class="post-foot">
+  <div class="wrap foot-inner">
+    <a class="next" href="config-driven.html">上一篇：配置驱动思维 →</a>
+    <a class="next" href="https://github.com/Batianxieshen1/blog/discussions" target="_blank" rel="noopener">💬 去讨论区留言</a>
+    <span class="foot-c">© 2026 蓝纸 · 机器生成初稿 · 人工复核发布</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var nav = document.getElementById("nav");
+  window.addEventListener("scroll", function () {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  });
+
+  /* ---------- giscus 评论区 ---------- */
+  var mount = document.getElementById("giscus-mount");
+  if (mount) {
+    var s = document.createElement("script");
+    s.src = "https://giscus.app/client.js";
+    s.setAttribute("data-repo", "Batianxieshen1/blog");
+    s.setAttribute("data-repo-id", "R_kgDOLzYzLw");
+    s.setAttribute("data-category", "Announcements");
+    s.setAttribute("data-category-id", "DIC_kwDOLzYzLs4CaB2m");
+    s.setAttribute("data-mapping", "pathname");
+    s.setAttribute("data-strict", "1");
+    s.setAttribute("data-reactions-enabled", "1");
+    s.setAttribute("data-emit-metadata", "0");
+    s.setAttribute("data-input-position", "top");
+    s.setAttribute("data-theme", "preferred_color_scheme");
+    s.setAttribute("data-lang", "zh-CN");
+    s.setAttribute("data-loading", "lazy");
+    s.crossOrigin = "anonymous";
+    s.async = true;
+    mount.appendChild(s);
+  }
+
+  /* ---------- 主题切换（同步 meta 与 giscus 评论区） ---------- */
+  var tt = document.getElementById("theme-toggle");
+  if (tt) {
+    tt.addEventListener("click", function () {
+      var root = document.documentElement;
+      var dark = root.getAttribute("data-theme") === "dark";
+      if (dark) root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", "dark");
+      try { localStorage.setItem("theme", dark ? "light" : "dark"); } catch (e) {}
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", dark ? "#f4f2ec" : "#14130f");
+      var iframe = document.querySelector("iframe.giscus-frame");
+      if (iframe) {
+        iframe.contentWindow.postMessage({ giscus: { setConfig: { theme: dark ? "dark" : "light" } } }, "https://giscus.app");
+      }
+    });
+  }
+
+  /* ---------- 读到文末盖「已阅」小章 ---------- */
+  var readKey = "lz-read-004";
+  var marked = false;
+  try { marked = localStorage.getItem(readKey) === "1"; } catch (e) {}
+  function markRead() {
+    if (marked) return;
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80) {
+      marked = true;
+      try { localStorage.setItem(readKey, "1"); } catch (e) {}
+      window.removeEventListener("scroll", markRead);
+    }
+  }
+  if (!marked) {
+    window.addEventListener("scroll", markRead, { passive: true });
+    markRead();
+  }
+})();
+</script>
+</body>
+</html>
